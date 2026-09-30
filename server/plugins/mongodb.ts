@@ -1,31 +1,23 @@
 import dns from 'dns';
-import mongoose from 'mongoose';
+import { connectToDatabase } from '../utils/db';
 
-// Yerel DNS sunucusu SRV/TXT kayıtlarını çözemediğinde doğrudan Google/Cloudflare DNS sunucularını kullanmasını sağlıyoruz.
-try {
-  dns.setServers(['1.1.1.1', '8.8.8.8']);
-  dns.setDefaultResultOrder('ipv4first');
-} catch (dnsErr) {
-  // Serverless ortamında DNS setServers kısıtlı olabilir, sessizce geç
+// Yerel DNS sunucusu SRV kayıtlarını çözemediğinde sadece yerel ortamda Google/Cloudflare DNS kullan
+// Serverless (Vercel/AWS Lambda) ortamında dns.setServers dış DNS isteklerini engelleyeceği için kesinlikle çalıştırılmaz!
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+  try {
+    dns.setServers(['1.1.1.1', '8.8.8.8']);
+    dns.setDefaultResultOrder('ipv4first');
+  } catch (dnsErr) {
+    // DNS ayarı desteklenmiyorsa sessizce geç
+  }
 }
 
-// Nuxt Server/Nitro başlatıldığında MongoDB bağlantısını kurar.
-export default defineNitroPlugin(async (nitroApp) => {
-  const config = useRuntimeConfig();
-
-  // Bağlantı zaten açıksa tekrar bağlanma (Serverless optimizasyonu)
-  if (mongoose.connection.readyState >= 1) {
-    return;
-  }
-
+// Nuxt Server/Nitro başlatıldığında MongoDB bağlantısını başlat
+export default defineNitroPlugin(async () => {
   try {
-    await mongoose.connect(config.mongodbUri, {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000
-    });
-    console.log('MongoDB bağlantısı başarıyla kuruldu.');
-  } catch (error) {
-    console.error('MongoDB bağlantı hatası:', error);
+    await connectToDatabase();
+    console.log('MongoDB bağlantısı hazır.');
+  } catch (error: any) {
+    console.warn('MongoDB başlangıç bağlantı uyarısı (istek anında tekrar denenecek):', error.message);
   }
 });
