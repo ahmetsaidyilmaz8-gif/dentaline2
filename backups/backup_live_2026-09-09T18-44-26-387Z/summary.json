@@ -1,0 +1,13 @@
+{
+  "backupDate": "2026-09-09T18:44:29.678Z",
+  "databaseName": "dentaline",
+  "collections": {
+    "consentforms": 5,
+    "treatments": 39,
+    "dentalcharts": 9,
+    "appointments": 33,
+    "patients": 33,
+    "payments": 30,
+    "labworks": 0
+  }
+}

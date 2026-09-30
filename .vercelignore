@@ -1,0 +1,6 @@
+backups/
+scratch/
+android/
+legacy_data/
+*.zip
+*.log

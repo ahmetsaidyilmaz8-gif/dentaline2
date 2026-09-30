@@ -1,0 +1,12 @@
+{
+  "appId": "com.tenaxline.app",
+  "appName": "TenaxLine",
+  "webDir": ".output/public",
+  "server": {
+    "url": "https://tenaxline.vercel.app",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

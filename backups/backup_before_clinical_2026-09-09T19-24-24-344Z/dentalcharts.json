@@ -1,0 +1,292 @@
+[
+  {
+    "_id": "6a8da6645de956f225b69c4a",
+    "patientId": "6a8d51cad683b6351cc74deb",
+    "__v": 0,
+    "chartData": {
+      "43": {
+        "status": "filled",
+        "note": ""
+      }
+    },
+    "createdAt": "2026-08-25T14:27:48.941Z",
+    "updatedAt": "2026-08-25T14:27:48.941Z"
+  },
+  {
+    "_id": "6a8da6bb5de956f225b69c88",
+    "patientId": "6a8b27435662a351cce36b76",
+    "__v": 0,
+    "chartData": {
+      "14": {
+        "status": "filled",
+        "note": "KUAFAJ YAPILDI DİŞE DAİR BİRŞEY KALMADI KIRILMARİSKİ YUKSEEK\n"
+      },
+      "35": {
+        "status": "filled",
+        "note": ""
+      }
+    },
+    "createdAt": "2026-08-25T14:29:15.119Z",
+    "updatedAt": "2026-08-26T11:52:46.250Z"
+  },
+  {
+    "_id": "6a900bd25de956f225b9969c",
+    "patientId": "6a8ffed779e54c71edb28c8b",
+    "__v": 0,
+    "chartData": {
+      "31": {
+        "status": "missing",
+        "note": ""
+      },
+      "32": {
+        "status": "missing",
+        "note": ""
+      },
+      "33": {
+        "status": "extraction",
+        "note": "Hareketli protez yapilcak ucret alinmadi cekimden"
+      },
+      "34": {
+        "status": "extraction",
+        "note": "Hareketli protez yapilcak ucret alinmadi cekimden"
+      },
+      "35": {
+        "status": "missing",
+        "note": ""
+      },
+      "36": {
+        "status": "missing",
+        "note": ""
+      },
+      "37": {
+        "status": "missing",
+        "note": ""
+      },
+      "38": {
+        "status": "missing",
+        "note": ""
+      },
+      "41": {
+        "status": "missing",
+        "note": ""
+      },
+      "42": {
+        "status": "missing",
+        "note": ""
+      },
+      "43": {
+        "status": "missing",
+        "note": ""
+      },
+      "44": {
+        "status": "missing",
+        "note": ""
+      },
+      "45": {
+        "status": "missing",
+        "note": ""
+      },
+      "46": {
+        "status": "missing",
+        "note": ""
+      },
+      "47": {
+        "status": "missing",
+        "note": ""
+      },
+      "48": {
+        "status": "missing",
+        "note": ""
+      }
+    },
+    "createdAt": "2026-08-27T10:05:06.195Z",
+    "updatedAt": "2026-08-27T10:05:06.195Z"
+  },
+  {
+    "_id": "6a986d07101146197d18aa07",
+    "patientId": "6a986cf781aaf6a6d41030ae",
+    "__v": 0,
+    "chartData": {},
+    "createdAt": "2026-09-02T18:37:59.375Z",
+    "updatedAt": "2026-09-02T18:37:59.375Z"
+  },
+  {
+    "_id": "6a997a52101146197d19d16f",
+    "patientId": "6a99799327450a40c3c8f98a",
+    "__v": 0,
+    "chartData": {
+      "11": {
+        "status": "decay",
+        "procedures": [
+          "decay"
+        ],
+        "note": "Dolgu gerekli",
+        "plannedPrice": 2500,
+        "isBilled": false
+      },
+      "16": {
+        "status": "decay",
+        "procedures": [],
+        "note": "Çekim gerekiyor kök kalmis",
+        "plannedPrice": null,
+        "isBilled": false
+      },
+      "21": {
+        "status": "decay",
+        "procedures": [
+          "decay"
+        ],
+        "note": "Dolgu gerekli",
+        "plannedPrice": 2500,
+        "isBilled": false
+      },
+      "24": {
+        "status": "crown",
+        "procedures": [
+          "crown"
+        ],
+        "note": "Sımante edildi",
+        "plannedPrice": 500,
+        "isBilled": false
+      },
+      "27": {
+        "status": "crown",
+        "procedures": [
+          "crown"
+        ],
+        "note": "Simante edildi",
+        "plannedPrice": 500,
+        "isBilled": false
+      },
+      "41": {
+        "status": "scaling",
+        "procedures": [],
+        "note": "Gerekli",
+        "plannedPrice": null,
+        "isBilled": false
+      },
+      "45": {
+        "status": "decay",
+        "procedures": [],
+        "note": "Dolgu gerekli",
+        "plannedPrice": null,
+        "isBilled": false
+      }
+    },
+    "createdAt": "2026-09-03T13:46:58.167Z",
+    "updatedAt": "2026-09-07T08:34:14.577Z"
+  },
+  {
+    "_id": "6a9abf22101146197d1b5e9f",
+    "patientId": "6a8f0bd968c2bdfda3eae944",
+    "__v": 0,
+    "chartData": {
+      "16": {
+        "status": "decay",
+        "note": "2500"
+      },
+      "26": {
+        "status": "decay",
+        "note": "2500"
+      },
+      "31": {
+        "status": "scaling",
+        "note": "2000"
+      },
+      "36": {
+        "status": "extraction",
+        "note": ""
+      },
+      "37": {
+        "status": "decay",
+        "note": ""
+      },
+      "47": {
+        "status": "decay",
+        "note": ""
+      }
+    },
+    "createdAt": "2026-09-04T12:52:50.355Z",
+    "updatedAt": "2026-09-04T12:52:53.826Z"
+  },
+  {
+    "_id": "6a9c8e070c7dc9902c3eea91",
+    "patientId": "6a9c4d51dd3c43778bd393e5",
+    "__v": 0,
+    "chartData": {
+      "16": {
+        "status": "healthy",
+        "procedures": [
+          "healthy"
+        ],
+        "note": "",
+        "plannedPrice": null,
+        "isBilled": true
+      }
+    },
+    "createdAt": "2026-09-05T21:47:51.195Z",
+    "updatedAt": "2026-09-05T23:00:11.922Z"
+  },
+  {
+    "_id": "6a9e870b0c7dc9902c40f085",
+    "patientId": "6a9e86d65fa2385e05ccc3b5",
+    "__v": 0,
+    "chartData": {
+      "17": {
+        "status": "extraction",
+        "procedures": [
+          "extraction"
+        ],
+        "note": "Kok acilmiz dis eti kaybi",
+        "plannedPrice": null,
+        "isBilled": false
+      },
+      "21": {
+        "status": "scaling",
+        "procedures": [
+          "scaling"
+        ],
+        "note": "Sallaniyor dis etleri yok dis tasi folu",
+        "plannedPrice": null,
+        "isBilled": false
+      }
+    },
+    "createdAt": "2026-09-07T09:42:34.953Z",
+    "updatedAt": "2026-09-07T09:45:10.760Z"
+  },
+  {
+    "_id": "6aa14a340b0b3a3f0c9ef4af",
+    "patientId": "6aa14476d8c986530857d615",
+    "__v": 0,
+    "chartData": {
+      "11": {
+        "status": "filled",
+        "procedures": [
+          "filled"
+        ],
+        "note": "KUAFAJ dycal üst komp",
+        "plannedPrice": 3500,
+        "isBilled": true
+      },
+      "21": {
+        "status": "filled",
+        "procedures": [
+          "filled"
+        ],
+        "note": "",
+        "plannedPrice": 3000,
+        "isBilled": true
+      }
+    },
+    "createdAt": "2026-09-09T11:59:48.592Z",
+    "updatedAt": "2026-09-09T11:59:53.707Z"
+  },
+  {
+    "_id": "6aa1ae7a0b0b3a3f0c9f6d07",
+    "patientId": "6aa1aada1b5962460f474618",
+    "__v": 0,
+    "chartData": {},
+    "createdAt": "2026-09-09T19:07:38.542Z",
+    "updatedAt": "2026-09-09T19:07:38.542Z"
+  }
+]
