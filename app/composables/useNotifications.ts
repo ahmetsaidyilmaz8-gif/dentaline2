@@ -270,18 +270,23 @@ export const useNotifications = () => {
   const loadNotifications = async () => {
     try {
       isLoading.value = true;
-      const appointments: any = await $fetch('/api/appointments');
-      if (!Array.isArray(appointments)) {
-        notifications.value = [];
-        return;
-      }
-
       const now = new Date();
       const todayStr = now.toISOString().split('T')[0];
       
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      const appointments: any = await $fetch('/api/appointments', {
+        params: {
+          startDate: todayStr,
+          endDate: tomorrowStr
+        }
+      });
+      if (!Array.isArray(appointments)) {
+        notifications.value = [];
+        return;
+      }
 
       const dismissed = getDismissedNotifs();
       const list: NotificationItem[] = [];

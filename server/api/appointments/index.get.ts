@@ -25,9 +25,12 @@ export default defineEventHandler(async (event) => {
       filter.patientId = patientId;
     }
 
+    const limit = Math.min(2000, Number(query.limit) || (date || (startDate && endDate) || patientId ? 2000 : 500));
+
     const appointments = await Appointment.find(filter)
       .populate('patientId', 'firstName lastName phone bloodType allergies')
       .sort({ date: 1, time: 1 })
+      .limit(limit)
       .lean();
 
     return appointments;
