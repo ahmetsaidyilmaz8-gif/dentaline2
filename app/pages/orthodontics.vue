@@ -1150,12 +1150,20 @@ const loadAllData = async () => {
     plans.value = plansRes || [];
     sessions.value = sessionsRes || [];
     stats.value = statsRes || {};
-    allPatients.value = patientsRes?.patients || patientsRes || [];
-    doctorsList.value = doctorsRes || [];
+    const docs = (doctorsRes || []).filter(d => !d.name?.toLowerCase().includes('klinik') && d.username !== 'klinik');
+    docs.sort((a, b) => {
+      const aIsSelman = a.name?.toLowerCase().includes('selman') || a.username === 'dtselo' || a.name?.toLowerCase().includes('muhammed');
+      const bIsSelman = b.name?.toLowerCase().includes('selman') || b.username === 'dtselo' || b.name?.toLowerCase().includes('muhammed');
+      if (aIsSelman && !bIsSelman) return -1;
+      if (!aIsSelman && bIsSelman) return 1;
+      return 0;
+    });
+    doctorsList.value = docs;
 
-    if (doctorsList.value.length > 0) {
-      if (!planForm.value.doctorId) planForm.value.doctorId = doctorsList.value[0]._id;
-      if (!sessionForm.value.doctorId) sessionForm.value.doctorId = doctorsList.value[0]._id;
+    const defDocId = docs[0]?._id ? String(docs[0]._id) : '';
+    if (defDocId) {
+      if (!planForm.value.doctorId) planForm.value.doctorId = defDocId;
+      if (!sessionForm.value.doctorId) sessionForm.value.doctorId = defDocId;
     }
   } catch (error) {
     console.error('Ortodonti verileri yüklenemedi:', error);

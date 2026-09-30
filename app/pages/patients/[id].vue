@@ -1604,6 +1604,17 @@
           </select>
         </div>
         <div>
+          <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">İlgili Hekim</label>
+          <select
+            v-model="appointmentForm.doctorId"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-medium"
+          >
+            <option v-for="doc in clinicDoctors" :key="doc._id" :value="doc._id">
+              {{ doc.name }}
+            </option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Randevu Notları</label>
           <textarea
             v-model="appointmentForm.notes"
@@ -2950,27 +2961,50 @@ const openReminderFromLedger = (item) => {
 
 // Hekim Listesi (Tahsilat ve Tedavi seçimleri için - Klinik filtrelenmiş)
 const clinicDoctors = ref([]);
+
+const sortDoctorsSelmanFirst = (list) => {
+  return [...list].sort((a, b) => {
+    const aIsSelman = a.name?.toLowerCase().includes('selman') || a.username === 'dtselo' || a.name?.toLowerCase().includes('muhammed');
+    const bIsSelman = b.name?.toLowerCase().includes('selman') || b.username === 'dtselo' || b.name?.toLowerCase().includes('muhammed');
+    if (aIsSelman && !bIsSelman) return -1;
+    if (!aIsSelman && bIsSelman) return 1;
+    return 0;
+  });
+};
+
+const getDefaultDoctorId = () => {
+  const selman = clinicDoctors.value.find(d => 
+    d.name?.toLowerCase().includes('selman') || 
+    d.username === 'dtselo' || 
+    d.name?.toLowerCase().includes('muhammed')
+  );
+  if (selman && selman._id) return String(selman._id);
+  return clinicDoctors.value[0]?._id ? String(clinicDoctors.value[0]._id) : '';
+};
+
 const loadDoctors = async () => {
   try {
     if (process.client) {
       const cached = localStorage.getItem('tenax_doctors_cache');
       if (cached) {
-        clinicDoctors.value = JSON.parse(cached);
+        clinicDoctors.value = sortDoctorsSelmanFirst(JSON.parse(cached));
       }
     }
     if (navigator.onLine) {
       const data = await $fetch('/api/doctors', { timeout: 4000 });
       const filtered = (data || []).filter(d => !d.name?.toLowerCase().includes('klinik') && d.username !== 'klinik');
-      clinicDoctors.value = filtered;
+      clinicDoctors.value = sortDoctorsSelmanFirst(filtered);
       if (process.client) {
-        localStorage.setItem('tenax_doctors_cache', JSON.stringify(filtered));
+        localStorage.setItem('tenax_doctors_cache', JSON.stringify(clinicDoctors.value));
       }
     }
-    if (clinicDoctors.value.length > 0) {
-      if (!treatmentForm.value.doctorId) treatmentForm.value.doctorId = clinicDoctors.value[0]._id;
-      if (!paymentForm.value.doctorId) paymentForm.value.doctorId = clinicDoctors.value[0]._id;
-      if (!patientPlanForm.value.doctorId) patientPlanForm.value.doctorId = clinicDoctors.value[0]._id;
-      if (!patientSessionForm.value.doctorId) patientSessionForm.value.doctorId = clinicDoctors.value[0]._id;
+    const defId = getDefaultDoctorId();
+    if (defId) {
+      if (!treatmentForm.value.doctorId) treatmentForm.value.doctorId = defId;
+      if (!paymentForm.value.doctorId) paymentForm.value.doctorId = defId;
+      if (!appointmentForm.value.doctorId) appointmentForm.value.doctorId = defId;
+      if (!patientPlanForm.value.doctorId) patientPlanForm.value.doctorId = defId;
+      if (!patientSessionForm.value.doctorId) patientSessionForm.value.doctorId = defId;
     }
   } catch (err) {
     console.warn('Hekimler yüklenirken hata:', err);
@@ -3173,7 +3207,7 @@ const openNewTreatmentModal = async () => {
     fee: 0,
     date: todayStr(),
     notes: '',
-    doctorId: clinicDoctors.value[0]?._id ? String(clinicDoctors.value[0]._id) : ''
+    doctorId: getDefaultDoctorId()
   };
   isTreatmentModalOpen.value = true;
 };
@@ -3189,7 +3223,7 @@ const openNewPaymentModal = async () => {
     method: 'cash',
     date: todayStr(),
     notes: '',
-    doctorId: clinicDoctors.value[0]?._id ? String(clinicDoctors.value[0]._id) : ''
+    doctorId: getDefaultDoctorId()
   };
   isFamilyDistributionEnabled.value = false;
   prepareFamilyDistributions();
@@ -3287,7 +3321,7 @@ const saveTreatment = async () => {
       fee: 0,
       date: todayStr(),
       notes: '',
-      doctorId: clinicDoctors.value[0]?._id ? String(clinicDoctors.value[0]._id) : ''
+      doctorId: getDefaultDoctorId()
     };
     editingTreatmentId.value = null;
 
@@ -3391,7 +3425,7 @@ const savePayment = async () => {
       method: 'cash',
       date: todayStr(),
       notes: '',
-      doctorId: clinicDoctors.value[0]?._id ? String(clinicDoctors.value[0]._id) : ''
+      doctorId: getDefaultDoctorId()
     };
     editingPaymentId.value = null;
 
@@ -3432,7 +3466,10 @@ const deleteLedgerItem = async (item) => {
 };
 
 // Yeni Randevu Ekleme Modalını Temiz Aç
-const openNewAppointmentModal = () => {
+const openNewAppointmentModal = async () => {
+  if (!clinicDoctors.value || clinicDoctors.value.length === 0) {
+    await loadDoctors();
+  }
   editingAppointmentId.value = null;
   appointmentForm.value = {
     procedure: '',
@@ -3440,13 +3477,17 @@ const openNewAppointmentModal = () => {
     time: '09:00',
     duration: 30,
     status: 'pending',
-    notes: ''
+    notes: '',
+    doctorId: getDefaultDoctorId()
   };
   isAppointmentModalOpen.value = true;
 };
 
 // Randevu Düzenleme Modalını Aç
-const openEditAppointmentModal = (appt) => {
+const openEditAppointmentModal = async (appt) => {
+  if (!clinicDoctors.value || clinicDoctors.value.length === 0) {
+    await loadDoctors();
+  }
   editingAppointmentId.value = appt._id;
   let dStr = todayStr();
   if (appt.date) {
@@ -3456,13 +3497,18 @@ const openEditAppointmentModal = (appt) => {
       dStr = String(appt.date).substring(0, 10);
     }
   }
+  const docId = appt.doctorId && typeof appt.doctorId === 'object'
+    ? String(appt.doctorId._id || '')
+    : (appt.doctorId ? String(appt.doctorId) : getDefaultDoctorId());
+
   appointmentForm.value = {
     procedure: appt.procedure || '',
     date: dStr,
     time: appt.time || '09:00',
     duration: appt.duration || 30,
     status: appt.status || 'pending',
-    notes: appt.notes || ''
+    notes: appt.notes || '',
+    doctorId: docId
   };
   isAppointmentModalOpen.value = true;
 };
@@ -3479,13 +3525,18 @@ const addAppointment = async () => {
     isSubmitting.value = true;
     const strPid = String(patientId);
 
+    const payload = {
+      patientId: strPid,
+      ...appointmentForm.value
+    };
+    if (!payload.doctorId) {
+      payload.doctorId = getDefaultDoctorId();
+    }
+
     if (editingAppointmentId.value) {
       await $fetch(`/api/appointments/${editingAppointmentId.value}`, {
         method: 'PUT',
-        body: {
-          patientId: strPid,
-          ...appointmentForm.value
-        }
+        body: payload
       });
 
       window.dispatchEvent(new CustomEvent('toast-message', {
@@ -3497,10 +3548,7 @@ const addAppointment = async () => {
     } else {
       await $fetch('/api/appointments', {
         method: 'POST',
-        body: {
-          patientId: strPid,
-          ...appointmentForm.value
-        }
+        body: payload
       });
 
       window.dispatchEvent(new CustomEvent('toast-message', {
@@ -3513,7 +3561,15 @@ const addAppointment = async () => {
 
     isAppointmentModalOpen.value = false;
     editingAppointmentId.value = null;
-    appointmentForm.value = { procedure: '', date: todayStr(), time: '09:00', duration: 30, status: 'pending', notes: '' };
+    appointmentForm.value = {
+      procedure: '',
+      date: todayStr(),
+      time: '09:00',
+      duration: 30,
+      status: 'pending',
+      notes: '',
+      doctorId: getDefaultDoctorId()
+    };
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
@@ -3863,7 +3919,7 @@ const openPatientSessionModal = () => {
     sessionNumber: pastSessions.length + 1,
     date: todayStr(),
     time: '11:00',
-    doctorId: patientData.value?.orthodonticPlan?.doctorId?._id || (clinicDoctors.value[0]?._id || ''),
+    doctorId: patientData.value?.orthodonticPlan?.doctorId?._id || getDefaultDoctorId(),
     sessionNotes: '',
     archwireUpper: '',
     archwireLower: '',
@@ -3880,7 +3936,7 @@ const openEditPatientSessionModal = (s) => {
     sessionNumber: s.sessionNumber,
     date: s.date,
     time: s.time || '11:00',
-    doctorId: s.doctorId?._id || s.doctorId || (clinicDoctors.value[0]?._id || ''),
+    doctorId: s.doctorId?._id || s.doctorId || getDefaultDoctorId(),
     sessionNotes: s.sessionNotes || '',
     archwireUpper: s.archwireUpper || '',
     archwireLower: s.archwireLower || '',
@@ -3951,7 +4007,7 @@ const deletePatientSession = async (sessionId) => {
 const openEditPatientPlanModal = (plan) => {
   editPatientPlanForm.value = {
     id: plan._id,
-    doctorId: plan.doctorId?._id || plan.doctorId || (clinicDoctors.value[0]?._id || ''),
+    doctorId: plan.doctorId?._id || plan.doctorId || getDefaultDoctorId(),
     bracketType: plan.bracketType || 'Metal Braket',
     totalAmount: plan.totalAmount || 0,
     durationMonths: plan.durationMonths || 10,
@@ -4060,7 +4116,7 @@ const deletePatientPlan = async () => {
 
 const openPatientPlanModal = () => {
   patientPlanForm.value = {
-    doctorId: clinicDoctors.value[0]?._id || '',
+    doctorId: getDefaultDoctorId(),
     bracketType: 'Metal Braket',
     totalAmount: 30000,
     downPayment: 5000,

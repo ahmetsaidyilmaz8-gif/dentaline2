@@ -10,22 +10,22 @@
       <div class="flex items-center gap-2 flex-wrap">
         <button
           @click="openExpenseModal()"
-          class="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-md shadow-rose-600/15 hover:shadow-rose-600/25 active:scale-95 transition-all duration-150"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 hover:border-rose-300 transition-all shadow-sm active:scale-95"
         >
-          <Icon name="heroicons:plus-circle" class="w-4 h-4" />
-          <span>+ Yeni Gider Ekle</span>
+          <Icon name="heroicons:plus-circle" class="w-4 h-4 text-rose-500" />
+          <span>Yeni Gider Ekle</span>
         </button>
         <button
           @click="openNewReminder"
-          class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl text-sm font-bold shadow-md shadow-amber-500/10 hover:shadow-amber-500/20 transition-all duration-150"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-amber-950/40 text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 rounded-xl text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 hover:border-amber-300 transition-all shadow-sm active:scale-95"
           title="Yeni Tedavi veya Ödeme Hatırlatıcısı Ekle"
         >
-          <Icon name="heroicons:bell-alert" class="w-4 h-4" />
+          <Icon name="heroicons:bell-alert" class="w-4 h-4 text-amber-500" />
           <span>Hatırlatıcı Ekle</span>
         </button>
         <button
           @click="openPaymentModal"
-          class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 active:scale-95 transition-all duration-150 shadow-sm"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-emerald-600/20 active:scale-95 transition-all"
         >
           <Icon name="heroicons:currency-dollar" class="w-4 h-4" />
           <span>+ Yeni Tahsilat Kaydet</span>
@@ -98,22 +98,22 @@
         </button>
       </div>
 
-      <!-- Sağ: Tüm Zamanlar Mini Bilgi Rozeti (Genel toplamı merak edenler için zarif ve sade pill) -->
+      <!-- Sağ: Genel Bilanço Mini Rozeti -->
       <div
-        v-if="selectedMonth !== 'all' && expenseSummary?.allTime"
-        class="flex items-center gap-2.5 text-xs bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 px-3.5 py-1.5 rounded-xl shrink-0"
+        v-if="stats"
+        class="flex items-center gap-3 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 px-3.5 py-2 rounded-xl shrink-0 flex-wrap"
       >
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-slate-400 font-medium">Tüm Zamanlar Net Kasa:</span>
-        <span class="font-mono font-bold text-slate-800 dark:text-white">
-          {{ formatCurrency(expenseSummary.allTime.netClinicProfit || 0) }}
-        </span>
-        <button
-          @click="setMonth('all')"
-          class="text-[11px] font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 underline underline-offset-2 ml-1"
-        >
-          Tümünü Gör
-        </button>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="text-slate-400 font-medium">Toplam Tahsilat:</span>
+          <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(stats?.totalRevenue) }}</span>
+        </div>
+        <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">|</span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span class="text-slate-400 font-medium">Bekleyen Alacak:</span>
+          <span class="font-mono font-bold text-rose-600 dark:text-rose-400">{{ formatCurrency(stats?.totalDebt) }}</span>
+        </div>
       </div>
     </div>
 
@@ -474,121 +474,53 @@
     <!-- ========================================================================= -->
     <!-- 2. BÖLÜM: HASTA TAHSİLATLARI & CARİ HAREKETLER (Aylık Gelir & Tahsilat)     -->
     <!-- ========================================================================= -->
-    <div v-else-if="activeMainTab === 'income' || activeMainTab === 'ledger'" class="flex flex-col gap-8">
-      <!-- Genel Finansal Durum Kartları (İnteraktif Filtreleme) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        
-        <!-- Toplam Yapılan Tedavi (Tümü / Hepsi) -->
-        <div
-          @click="setFilter('all')"
-          :class="[
-            'p-5 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border',
-            activeFilter === 'all'
-              ? 'ring-2 ring-slate-400 dark:ring-slate-500 bg-slate-50/80 dark:bg-slate-800/60 border-slate-300 dark:border-slate-600'
-              : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-          ]"
-          title="Tüm hareketleri listelemek için tıklayın"
-        >
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block">Toplam Yapılan Tedavi</span>
-              <span v-if="activeFilter === 'all'" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">Seçili</span>
-            </div>
-            <span class="text-3xl font-black text-slate-800 dark:text-slate-100 font-mono block mt-1.5 leading-none">
-              {{ formatCurrency(stats?.totalFees || 0) }}
-            </span>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold block mt-1">
-              Tamamlanan tedavilerin toplam bedeli (Tümü)
-            </span>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center shrink-0">
-            <Icon name="heroicons:document-text" class="w-6 h-6" />
-          </div>
-        </div>
-
-        <!-- Toplam Tahsilat (Sadece Alınan Ödemeler) -->
-        <div
-          @click="setFilter('payment')"
-          :class="[
-            'p-5 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border',
-            activeFilter === 'payment'
-              ? 'ring-2 ring-emerald-500 dark:ring-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-700'
-              : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900/50'
-          ]"
-          title="Sadece alınan ödemeleri listelemek için tıklayın"
-        >
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block">Toplam Tahsil Edilen</span>
-              <span v-if="activeFilter === 'payment'" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300">Seçili</span>
-            </div>
-            <span class="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono block mt-1.5 leading-none">
-              {{ formatCurrency(stats?.totalRevenue) }}
-            </span>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold block mt-1">
-              Kasalara giren toplam nakit/kart hacmi
-            </span>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <Icon name="heroicons:banknotes" class="w-6 h-6" />
-          </div>
-        </div>
-
-        <!-- Toplam Alacak (Kalan Bekleyen Alacaklar) -->
-        <div
-          @click="setFilter('debt')"
-          :class="[
-            'p-5 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border',
-            activeFilter === 'debt'
-              ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700'
-              : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-900/50'
-          ]"
-          title="Sadece kalan bekleyen alacak / borçlu hastaları listelemek için tıklayın"
-        >
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block">Kalan Bekleyen Alacak</span>
-              <span v-if="activeFilter === 'debt'" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300">Seçili</span>
-            </div>
-            <span class="text-3xl font-black text-rose-600 dark:text-rose-400 font-mono block mt-1.5 leading-none">
-              {{ formatCurrency(stats?.totalDebt) }}
-            </span>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold block mt-1">
-              Toplam {{ stats?.debtorsCount || debtorPatients.length }} borçlu hasta bakiyesi
-            </span>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-            <Icon name="heroicons:credit-card" class="w-6 h-6" />
-          </div>
-        </div>
-
-      </div>
+    <div v-else-if="activeMainTab === 'income' || activeMainTab === 'ledger'" class="flex flex-col gap-6">
 
       <!-- Genel Cari Hareket Tablosu / Borçlu Hastalar Listesi -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3 flex-wrap">
-            <h3 class="font-bold text-slate-800 dark:text-white text-base uppercase tracking-wider flex items-center gap-2">
-              <span v-if="activeFilter === 'debt'" class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-              <span>
-                {{
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Görünüm Filtre Butonları (Tümü / Tahsilatlar / Alacaklar) -->
+            <div class="inline-flex p-1 bg-slate-200/60 dark:bg-slate-800 rounded-xl text-xs font-bold gap-1 border border-slate-200 dark:border-slate-700">
+              <button
+                @click="setFilter('all')"
+                :class="[
+                  activeFilter === 'all'
+                    ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white',
+                  'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5'
+                ]"
+              >
+                <Icon name="heroicons:list-bullet" class="w-3.5 h-3.5" />
+                <span>Tüm Hareketler</span>
+              </button>
+
+              <button
+                @click="setFilter('payment')"
+                :class="[
                   activeFilter === 'payment'
-                    ? 'Alınan Ödemeler (Tahsilatlar)'
-                    : activeFilter === 'debt'
-                      ? 'Kalan Bekleyen Alacaklar (Borçlu Hastalar Listesi)'
-                      : 'Tüm Cari Hareket Kayıtları'
-                }}
-              </span>
-            </h3>
-            <button
-              v-if="activeFilter !== 'all'"
-              @click="setFilter('all')"
-              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-              title="Tüm hareketleri göster"
-            >
-              <Icon name="heroicons:x-mark" class="w-3.5 h-3.5" />
-              <span>Filtreyi Temizle</span>
-            </button>
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400',
+                  'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5'
+                ]"
+              >
+                <Icon name="heroicons:banknotes" class="w-3.5 h-3.5" />
+                <span>Sadece Tahsilatlar</span>
+              </button>
+
+              <button
+                @click="setFilter('debt')"
+                :class="[
+                  activeFilter === 'debt'
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400',
+                  'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5'
+                ]"
+              >
+                <Icon name="heroicons:credit-card" class="w-3.5 h-3.5" />
+                <span>Bekleyen Alacaklar ({{ stats?.debtorsCount || debtorPatients.length }})</span>
+              </button>
+            </div>
           </div>
 
           <div class="flex items-center flex-wrap gap-2.5">
@@ -1854,7 +1786,15 @@ const ledgerTotalPages = ref(1);
 const loadDoctors = async () => {
   try {
     const data = await $fetch('/api/doctors');
-    doctors.value = data;
+    const filtered = (data || []).filter(d => !d.name?.toLowerCase().includes('klinik') && d.username !== 'klinik');
+    filtered.sort((a, b) => {
+      const aIsSelman = a.name?.toLowerCase().includes('selman') || a.username === 'dtselo' || a.name?.toLowerCase().includes('muhammed');
+      const bIsSelman = b.name?.toLowerCase().includes('selman') || b.username === 'dtselo' || b.name?.toLowerCase().includes('muhammed');
+      if (aIsSelman && !bIsSelman) return -1;
+      if (!aIsSelman && bIsSelman) return 1;
+      return 0;
+    });
+    doctors.value = filtered;
   } catch (err) {
     console.error(err);
   }
@@ -1873,8 +1813,13 @@ const getDoctorName = (doctorId) => {
 };
 
 const getDefaultDoctorId = () => {
-  const selmanDoc = doctors.value.find(d => d.username === 'dtselo' || d.name?.includes('Selman')) || doctors.value[0];
-  return selmanDoc?._id ? String(selmanDoc._id) : '';
+  const selmanDoc = doctors.value.find(d => 
+    d.name?.toLowerCase().includes('selman') || 
+    d.username === 'dtselo' || 
+    d.name?.toLowerCase().includes('muhammed')
+  );
+  if (selmanDoc && selmanDoc._id) return String(selmanDoc._id);
+  return doctors.value[0]?._id ? String(doctors.value[0]._id) : '';
 };
 
 const defaultForm = {

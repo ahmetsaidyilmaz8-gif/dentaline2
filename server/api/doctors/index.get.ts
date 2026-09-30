@@ -70,6 +70,14 @@ export default defineEventHandler(async (event) => {
       };
     });
 
+    doctorsWithFinances.sort((a: any, b: any) => {
+      const aIsSelman = a.name?.toLowerCase().includes('selman') || a.username === 'dtselo' || a.name?.toLowerCase().includes('muhammed');
+      const bIsSelman = b.name?.toLowerCase().includes('selman') || b.username === 'dtselo' || b.name?.toLowerCase().includes('muhammed');
+      if (aIsSelman && !bIsSelman) return -1;
+      if (!aIsSelman && bIsSelman) return 1;
+      return 0;
+    });
+
     return doctorsWithFinances;
   } catch (error: any) {
     throw createError({
