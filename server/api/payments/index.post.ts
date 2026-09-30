@@ -24,7 +24,15 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const targetDoctorId = body.doctorId || patient.doctorId || currentDoctor._id;
+    let targetDoctorId = body.doctorId || patient.doctorId;
+    if (!targetDoctorId || String(targetDoctorId) === '6aa1cd9f6be357016bee9c25') {
+      const defaultDoc = await User.findOne({ username: 'dtselo' }) || await User.findOne({ name: /Selman/i });
+      if (defaultDoc) {
+        targetDoctorId = defaultDoc._id;
+      } else {
+        targetDoctorId = currentDoctor?._id || null;
+      }
+    }
     let doctorRate = 0;
     let doctorEarning = 0;
 

@@ -1,4 +1,5 @@
 import { Treatment } from '../../models/Treatment';
+import { User } from '../../models/User';
 
 // Yeni bir tedavi kaydı oluşturur
 export default defineEventHandler(async (event) => {
@@ -10,6 +11,13 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
         message: 'Hasta seçimi, yapılacak işlem ve ücret alanları zorunludur.'
       });
+    }
+
+    if (!body.doctorId || String(body.doctorId) === '6aa1cd9f6be357016bee9c25') {
+      const defaultDoc = await User.findOne({ username: 'dtselo' }) || await User.findOne({ name: /Selman/i });
+      if (defaultDoc) {
+        body.doctorId = defaultDoc._id;
+      }
     }
 
     const treatment = new Treatment(body);

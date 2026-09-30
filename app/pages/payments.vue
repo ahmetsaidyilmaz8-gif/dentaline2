@@ -854,7 +854,7 @@
 
                 <!-- Hekim -->
                 <td class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  {{ item.doctorId?.name || 'Klinik Genel' }}
+                  {{ item.doctorName || getDoctorName(item.doctorId) || (typeof item.doctorId === 'object' ? item.doctorId?.name : null) || 'Klinik Genel' }}
                 </td>
 
                 <!-- Tutar -->
@@ -1865,6 +1865,18 @@ const getDocRate = (doctorId) => {
   return doc?.rate !== undefined ? doc.rate : 30;
 };
 
+const getDoctorName = (doctorId) => {
+  if (!doctorId) return '';
+  const idStr = typeof doctorId === 'object' ? (doctorId._id || '') : String(doctorId);
+  const doc = doctors.value.find(d => String(d._id) === idStr);
+  return doc?.name || (typeof doctorId === 'object' ? doctorId.name : '');
+};
+
+const getDefaultDoctorId = () => {
+  const selmanDoc = doctors.value.find(d => d.username === 'dtselo' || d.name?.includes('Selman')) || doctors.value[0];
+  return selmanDoc?._id ? String(selmanDoc._id) : '';
+};
+
 const defaultForm = {
   patientId: '',
   amount: 0,
@@ -2074,7 +2086,7 @@ const openPaymentModalForPatient = async (debtor) => {
     ...defaultForm,
     patientId: debtor._id,
     amount: debtor.debt,
-    doctorId: doctors.value[0]?._id ? String(doctors.value[0]._id) : '',
+    doctorId: getDefaultDoctorId(),
     notes: `Kalan borç tahsilatı (Toplam Borç: ${debtor.debt} TL)`
   };
   isPaymentModalOpen.value = true;
@@ -2085,7 +2097,7 @@ const openPaymentModal = async () => {
   await Promise.all([loadPatients(), loadDoctors()]);
   form.value = {
     ...defaultForm,
-    doctorId: doctors.value[0]?._id ? String(doctors.value[0]._id) : ''
+    doctorId: getDefaultDoctorId()
   };
   isPaymentModalOpen.value = true;
 };
@@ -2098,7 +2110,7 @@ const openEditModal = async (item) => {
 
   const doctorIdVal = item.doctorId && typeof item.doctorId === 'object'
     ? String(item.doctorId._id || '')
-    : (item.doctorId ? String(item.doctorId) : (doctors.value[0]?._id ? String(doctors.value[0]._id) : ''));
+    : (item.doctorId ? String(item.doctorId) : getDefaultDoctorId());
 
   if (item.type === 'payment') {
     editingPaymentId.value = item.id;

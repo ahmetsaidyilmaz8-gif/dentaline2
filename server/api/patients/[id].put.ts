@@ -12,6 +12,14 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event);
+    if (body.firstName !== undefined || body.lastName !== undefined) {
+      const existing = await Patient.findById(id).select('firstName lastName');
+      if (existing) {
+        const fn = body.firstName !== undefined ? body.firstName : existing.firstName;
+        const ln = body.lastName !== undefined ? body.lastName : existing.lastName;
+        body.fullName = `${fn || ''} ${ln || ''}`.trim();
+      }
+    }
     const patient = await Patient.findByIdAndUpdate(id, body, { new: true, runValidators: true });
 
     if (!patient) {

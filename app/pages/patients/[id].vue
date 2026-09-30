@@ -15,19 +15,33 @@
 
   <div v-else class="flex flex-col gap-6 w-full max-w-full min-w-0 overflow-x-hidden">
     <!-- Geri Butonu & Üst Başlık (Panel içinde) -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-4 w-full max-w-full min-w-0">
-      <NuxtLink
-        to="/patients"
-        class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center shrink-0"
-      >
-        <Icon name="heroicons:arrow-left" class="w-4 h-4 text-slate-600 dark:text-slate-300" />
-      </NuxtLink>
-      <div class="min-w-0">
-        <span class="text-xs sm:text-sm text-slate-400 dark:text-slate-500 font-semibold block uppercase tracking-wider">Hasta Detay Profili</span>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight truncate">
-          {{ patientData.patient.firstName }} {{ patientData.patient.lastName }}
-        </h2>
+    <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm flex items-center justify-between gap-3 sm:gap-4 w-full max-w-full min-w-0">
+      <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+        <NuxtLink
+          to="/patients"
+          class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center shrink-0"
+        >
+          <Icon name="heroicons:arrow-left" class="w-4 h-4 text-slate-600 dark:text-slate-300" />
+        </NuxtLink>
+        <div class="min-w-0">
+          <span class="text-xs sm:text-sm text-slate-400 dark:text-slate-500 font-semibold block uppercase tracking-wider">Hasta Detay Profili</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight truncate">
+            {{ patientData.patient.firstName }} {{ patientData.patient.lastName }}
+          </h2>
+        </div>
       </div>
+
+      <!-- Sağ Taraf: Düzenleme Seçeneği -->
+      <button
+        type="button"
+        @click="openPatientEditModal"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-teal-600/15 hover:shadow-teal-600/25 transition-all shrink-0 cursor-pointer"
+        title="Hasta Bilgilerini Düzenle"
+      >
+        <Icon name="heroicons:pencil-square" class="w-4 h-4" />
+        <span class="hidden sm:inline">Hasta Bilgilerini Düzenle</span>
+        <span class="sm:hidden">Düzenle</span>
+      </button>
     </div>
 
     <!-- Hızlı Uyarı Panelleri (Alerji & Kronik Rahatsızlıklar) -->
@@ -67,13 +81,34 @@
             <h3 class="font-bold text-slate-800 dark:text-white text-base">{{ patientData.patient.firstName }} {{ patientData.patient.lastName }}</h3>
             <span class="text-sm text-slate-400 dark:text-slate-500 font-medium font-mono block mt-0.5">TC: {{ patientData.patient.tcNo || 'Belirtilmemiş' }}</span>
           </div>
+
+          <!-- Sol Sütun: Bilgileri Düzenle Butonu -->
+          <button
+            type="button"
+            @click="openPatientEditModal"
+            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-200 hover:text-teal-700 dark:hover:text-teal-300 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-slate-700 hover:border-teal-300 dark:hover:border-teal-700 active:scale-95 shadow-sm"
+          >
+            <Icon name="heroicons:pencil-square" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <span>Hasta Bilgilerini Düzenle</span>
+          </button>
         </div>
 
         <!-- Demografik Detay Listesi -->
         <div class="space-y-4 text-sm">
           <!-- İletişim -->
           <div>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">İletişim Bilgileri</span>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">İletişim Bilgileri</span>
+              <button
+                type="button"
+                @click="openPatientEditModal"
+                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
+                title="İletişim Bilgilerini Düzenle"
+              >
+                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
+                <span>Düzenle</span>
+              </button>
+            </div>
             <div class="mt-2 space-y-2 text-slate-600 dark:text-slate-300">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -170,7 +205,18 @@
 
           <!-- Kimlik/Medikal -->
           <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Kişisel Bilgiler</span>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Kişisel Bilgiler</span>
+              <button
+                type="button"
+                @click="openPatientEditModal"
+                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
+                title="Kişisel Bilgileri Düzenle"
+              >
+                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
+                <span>Düzenle</span>
+              </button>
+            </div>
             <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-slate-600 dark:text-slate-300 font-medium">
               <div>
                 <div class="text-xs text-slate-400 dark:text-slate-500">Yaş</div>
@@ -193,7 +239,18 @@
 
           <!-- Acil Durum Yakını -->
           <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Acil Durum İrtibatı</span>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Acil Durum İrtibatı</span>
+              <button
+                type="button"
+                @click="openPatientEditModal"
+                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
+                title="Acil Durum İrtibatını Düzenle"
+              >
+                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
+                <span>Düzenle</span>
+              </button>
+            </div>
             <div class="mt-2 text-slate-600 dark:text-slate-300 space-y-1.5 font-medium">
               <div class="text-slate-800 dark:text-slate-200 font-bold">{{ patientData.patient.emergencyContact || '—' }}</div>
               <div class="flex items-center gap-1.5 font-mono">
@@ -2406,6 +2463,230 @@
       </template>
     </AppModal>
 
+    <!-- 5. Aydınlatılmış Onam Belgesi Detayı & PDF Önizleme Modalı -->
+    <ConsentPreviewModal
+      :isOpen="isPreviewModalOpen"
+      :form="selectedConsentForm"
+      :patient="patientData?.patient"
+      @close="isPreviewModalOpen = false"
+    />
+
+    <!-- 6. Hasta Profil Bilgilerini Düzenleme Modalı -->
+    <AppModal
+      :isOpen="isPatientEditModalOpen"
+      title="✏️ Hasta Profil Bilgilerini Düzenle"
+      width="2xl"
+      @close="isPatientEditModalOpen = false"
+    >
+      <form @submit.prevent="savePatientEdit" class="space-y-4">
+        <!-- 1. Kişisel Bilgiler -->
+        <h4 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center gap-1.5">
+          <Icon name="heroicons:user" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>Kişisel Bilgiler</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+              Ad <span class="text-rose-500">*</span>
+            </label>
+            <input
+              v-model="patientEditForm.firstName"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+              Soyad <span class="text-rose-500">*</span>
+            </label>
+            <input
+              v-model="patientEditForm.lastName"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">TC Kimlik No</label>
+            <input
+              v-model="patientEditForm.tcNo"
+              type="text"
+              maxlength="11"
+              placeholder="11 haneli T.C. No"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm font-mono bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Doğum Tarihi</label>
+              <input
+                v-model="patientEditForm.birthDate"
+                type="date"
+                class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Cinsiyet</label>
+              <select
+                v-model="patientEditForm.gender"
+                class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+              >
+                <option value="">Seçin</option>
+                <option value="male">Erkek</option>
+                <option value="female">Kadın</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. İletişim Bilgileri -->
+        <h4 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 pt-2 flex items-center gap-1.5">
+          <Icon name="heroicons:phone" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>İletişim Bilgileri</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Telefon</label>
+            <input
+              v-model="patientEditForm.phone"
+              type="text"
+              placeholder="05xxxxxxxxx"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm font-mono bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">E-posta</label>
+            <input
+              v-model="patientEditForm.email"
+              type="email"
+              placeholder="ornek@mail.com"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Adres</label>
+            <input
+              v-model="patientEditForm.address"
+              type="text"
+              placeholder="Mahalle, cadde, sokak, no, ilçe/il..."
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <!-- 3. Medikal & Sağlık Bilgileri -->
+        <h4 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 pt-2 flex items-center gap-1.5">
+          <Icon name="heroicons:heart" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>Medikal & Sağlık Bilgileri</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Kan Grubu</label>
+            <select
+              v-model="patientEditForm.bloodType"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-semibold"
+            >
+              <option value="">Bilinmiyor / Belirtilmemiş</option>
+              <option value="A+">A Rh(+)</option>
+              <option value="A-">A Rh(-)</option>
+              <option value="B+">B Rh(+)</option>
+              <option value="B-">B Rh(-)</option>
+              <option value="AB+">AB Rh(+)</option>
+              <option value="AB-">AB Rh(-)</option>
+              <option value="0+">0 Rh(+)</option>
+              <option value="0-">0 Rh(-)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Düzenli İlaçlar</label>
+            <input
+              v-model="patientEditForm.medications"
+              type="text"
+              placeholder="Örn: Tansiyon ilacı, Aspirin..."
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-rose-600 dark:text-rose-400 mb-1">Tıbbi Alerjiler (Penisilin vb.)</label>
+            <input
+              v-model="patientEditForm.allergies"
+              type="text"
+              placeholder="Örn: Penisilin alerjisi, Lateks..."
+              class="w-full px-3 py-2 border border-rose-200 dark:border-rose-900/60 rounded-xl focus:outline-none focus:border-rose-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Kronik Rahatsızlıklar</label>
+            <input
+              v-model="patientEditForm.chronicDiseases"
+              type="text"
+              placeholder="Örn: Diyabet, Kalp pili, Astım..."
+              class="w-full px-3 py-2 border border-amber-200 dark:border-amber-900/60 rounded-xl focus:outline-none focus:border-amber-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <!-- 4. Acil Durum İrtibatı -->
+        <h4 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 pt-2 flex items-center gap-1.5">
+          <Icon name="heroicons:shield-exclamation" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>Acil Durum İrtibatı</span>
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Acil Durum Yakını</label>
+            <input
+              v-model="patientEditForm.emergencyContact"
+              type="text"
+              placeholder="Örn: Eşi Tahir Karagöl"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Acil Durum Telefonu</label>
+            <input
+              v-model="patientEditForm.emergencyPhone"
+              type="text"
+              placeholder="05xxxxxxxxx"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm font-mono bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <!-- 5. Hekim Notu -->
+        <h4 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 pt-2 flex items-center gap-1.5">
+          <Icon name="heroicons:document-text" class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <span>Klinik Hekim Notları</span>
+        </h4>
+        <div>
+          <textarea
+            v-model="patientEditForm.notes"
+            rows="3"
+            placeholder="Hasta hakkında hekim notları, özel açıklamalar..."
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+          ></textarea>
+        </div>
+      </form>
+
+      <template #footer>
+        <button
+          type="button"
+          @click="isPatientEditModalOpen = false"
+          class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+        >
+          İptal
+        </button>
+        <button
+          type="button"
+          @click="savePatientEdit"
+          :disabled="isSavingPatient"
+          class="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-md shadow-teal-600/20 active:scale-95 transition-all"
+        >
+          {{ isSavingPatient ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+        </button>
+      </template>
+    </AppModal>
+
   </div>
 </template>
 
@@ -2511,6 +2792,87 @@ const saveDoctorNotes = async () => {
     }));
   } finally {
     isSavingNotes.value = false;
+  }
+};
+
+// Hasta Bilgilerini Düzenleme Durumu & Formu
+const isPatientEditModalOpen = ref(false);
+const isSavingPatient = ref(false);
+const patientEditForm = ref({
+  firstName: '',
+  lastName: '',
+  tcNo: '',
+  birthDate: '',
+  gender: '',
+  phone: '',
+  email: '',
+  address: '',
+  bloodType: '',
+  allergies: '',
+  chronicDiseases: '',
+  medications: '',
+  emergencyContact: '',
+  emergencyPhone: '',
+  notes: ''
+});
+
+const openPatientEditModal = () => {
+  const p = patientData.value?.patient || {};
+  patientEditForm.value = {
+    firstName: p.firstName || '',
+    lastName: p.lastName || '',
+    tcNo: p.tcNo || '',
+    birthDate: p.birthDate ? String(p.birthDate).slice(0, 10) : '',
+    gender: p.gender || '',
+    phone: p.phone || '',
+    email: p.email || '',
+    address: p.address || '',
+    bloodType: p.bloodType || '',
+    allergies: p.allergies || '',
+    chronicDiseases: p.chronicDiseases || '',
+    medications: p.medications || '',
+    emergencyContact: p.emergencyContact || '',
+    emergencyPhone: p.emergencyPhone || '',
+    notes: p.notes || ''
+  };
+  isPatientEditModalOpen.value = true;
+};
+
+const savePatientEdit = async () => {
+  if (!patientData.value?.patient?._id) return;
+  try {
+    isSavingPatient.value = true;
+    const patId = String(patientData.value.patient._id);
+    const updated = await $fetch(`/api/patients/${patId}`, {
+      method: 'PUT',
+      body: patientEditForm.value
+    });
+
+    if (updated) {
+      patientData.value.patient = {
+        ...patientData.value.patient,
+        ...updated
+      };
+    }
+
+    isPatientEditModalOpen.value = false;
+    window.dispatchEvent(new CustomEvent('toast-message', {
+      detail: {
+        message: 'Hasta profil bilgileri başarıyla güncellendi.',
+        type: 'success'
+      }
+    }));
+    await loadPatientDetails();
+  } catch (error) {
+    console.error('Hasta güncellenirken hata:', error);
+    window.dispatchEvent(new CustomEvent('toast-message', {
+      detail: {
+        message: error?.data?.message || 'Hasta bilgileri güncellenirken bir hata oluştu.',
+        type: 'error'
+      }
+    }));
+  } finally {
+    isSavingPatient.value = false;
   }
 };
 

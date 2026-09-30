@@ -55,7 +55,11 @@ export async function getDoctorFromEvent(event: any) {
 export async function requireDoctor(event: any) {
   let doctor = await getDoctorFromEvent(event);
   if (!doctor) {
-    // Oturum düşmüşse veya SSR / yerel geliştirme ortamında klinik kullanıcısını fallback olarak bul
+    // Oturum düşmüşse veya SSR / yerel geliştirme ortamında Muhammed Selman Yılmaz'ı fallback olarak bul
+    const selmanUser = await User.findOne({ username: 'dtselo' }).select('-password').lean();
+    if (selmanUser) {
+      return selmanUser;
+    }
     const clinicUser = await User.findOne({ username: 'klinik' }).select('-password').lean();
     if (clinicUser) {
       return clinicUser;
