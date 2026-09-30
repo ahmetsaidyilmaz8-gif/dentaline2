@@ -106,9 +106,6 @@
                   <Icon name="heroicons:banknotes" class="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
                   <span>Ödemeler & Finans</span>
                 </div>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-500/15 text-rose-400 rounded-full border border-rose-500/25">
-                  Gider & Kasa
-                </span>
               </NuxtLink>
 
               <NuxtLink
@@ -122,9 +119,6 @@
                   <Icon name="heroicons:scale" class="w-5 h-5 text-amber-400 transition-transform duration-200 group-hover:scale-110" />
                   <span>Hekim Hak Edişleri</span>
                 </div>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-500/15 text-amber-400 rounded-full border border-amber-500/25">
-                  Kasa / Havuz
-                </span>
               </NuxtLink>
 
               <NuxtLink
@@ -138,9 +132,6 @@
                   <Icon name="heroicons:sparkles" class="w-5 h-5 text-indigo-400 transition-transform duration-200 group-hover:scale-110" />
                   <span>Ortodonti</span>
                 </div>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-500/15 text-indigo-400 rounded-full border border-indigo-500/25">
-                  Özel Modül
-                </span>
               </NuxtLink>
 
               <NuxtLink
@@ -167,9 +158,6 @@
                   <Icon name="heroicons:circle-stack" class="w-5 h-5 text-teal-400 transition-transform duration-200 group-hover:scale-110" />
                   <span>Veri Yedekleme</span>
                 </div>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-teal-500/15 text-teal-400 rounded-full border border-teal-500/25">
-                  Yedekle / Taşı
-                </span>
               </NuxtLink>
             </div>
           </div>
@@ -262,16 +250,6 @@
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>{{ currentDoctor.name }}</span>
           </div>
-
-          <!-- Hızlı Veri Yedekleme Butonu -->
-          <NuxtLink
-            to="/backup"
-            class="px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
-            title="Klinik Verilerini Yedekle & Geri Yükle"
-          >
-            <Icon name="heroicons:circle-stack" class="w-4 h-4 text-teal-500" />
-            <span class="hidden md:inline">Yedekle</span>
-          </NuxtLink>
 
           <!-- AI Klinik Asistanı Header Kısayolu -->
           <button

@@ -563,17 +563,6 @@
                 <Icon name="heroicons:check-circle" class="w-3.5 h-3.5" />
                 Kayıtlı Hasta
               </span>
-              <NuxtLink
-                v-if="form.patientId"
-                :to="`/patients/${form.patientId}`"
-                target="_blank"
-                class="text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 hover:underline flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
-                title="Yeni sekmede hasta profilini aç"
-              >
-                <Icon name="heroicons:user" class="w-3.5 h-3.5" />
-                <span>Hasta Profiline Git</span>
-                <Icon name="heroicons:arrow-top-right-on-square" class="w-3 h-3" />
-              </NuxtLink>
             </div>
           </div>
 
@@ -1126,6 +1115,19 @@ const onMonthCellClick = (dateStr) => {
   openAddModalWithDateTime(dateStr, '09:00');
 };
 
+// Varsayılan hekim olarak Muhammed Selman Yılmaz'ı seç (aksi belirtilmedikçe / değiştirilmedikçe)
+const getPreferredDoctorId = () => {
+  const selman = doctorsList.value.find(d => 
+    d.name?.toLowerCase().includes('selman') || 
+    d.name?.toLowerCase().includes('muhammed')
+  );
+  if (selman) return selman._id;
+  if (currentDoctor.value?.id && !currentDoctor.value.username?.toLowerCase().includes('klinik')) {
+    return currentDoctor.value.id;
+  }
+  return doctorsList.value[0]?._id || '';
+};
+
 // Hekimleri API'den Çek (Klinik hariç gerçek hekimler)
 const loadDoctors = async () => {
   try {
@@ -1142,6 +1144,13 @@ const loadDoctors = async () => {
       doctorsList.value = filtered;
       if (process.client) {
         localStorage.setItem('tenax_doctors_cache', JSON.stringify(filtered));
+      }
+    }
+    // Yeni randevu planlarken Muhammed Selman Yılmaz'ı varsayılan olarak seç
+    if (!editingId.value) {
+      const prefId = getPreferredDoctorId();
+      if (prefId && (!form.value.doctorId || form.value.doctorId === doctorsList.value[0]?._id)) {
+        form.value.doctorId = prefId;
       }
     }
   } catch (err) {
@@ -1337,27 +1346,35 @@ const openAddModal = async () => {
   editingId.value = null;
   patientInput.value = '';
   isDropdownOpen.value = false;
+  if (doctorsList.value.length === 0) {
+    await Promise.all([loadPatients(), loadDoctors()]);
+  } else {
+    loadPatients();
+  }
   form.value = {
     ...defaultForm,
     date: formatYMD(currentDate.value),
-    doctorId: currentDoctor.value?.id || (doctorsList.value[0]?._id || '')
+    doctorId: getPreferredDoctorId()
   };
   isModalOpen.value = true;
-  await Promise.all([loadPatients(), loadDoctors()]);
 };
 
 const openAddModalWithDateTime = async (date, time = '09:00') => {
   editingId.value = null;
   patientInput.value = '';
   isDropdownOpen.value = false;
+  if (doctorsList.value.length === 0) {
+    await Promise.all([loadPatients(), loadDoctors()]);
+  } else {
+    loadPatients();
+  }
   form.value = {
     ...defaultForm,
     date,
     time,
-    doctorId: currentDoctor.value?.id || (doctorsList.value[0]?._id || '')
+    doctorId: getPreferredDoctorId()
   };
   isModalOpen.value = true;
-  await Promise.all([loadPatients(), loadDoctors()]);
 };
 
 // Randevu Düzenleme Modalı Aç

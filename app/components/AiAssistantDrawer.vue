@@ -1,20 +1,5 @@
 <template>
   <div>
-    <!-- Sabit AI Asistan Butonu (Mobilde Sol Altta, Masaüstünde Sağ Altta - Hamburger Menüyle Çakışmaz) -->
-    <div class="fixed bottom-5 left-4 sm:bottom-6 sm:left-6 lg:left-auto lg:right-6 lg:bottom-6 z-40 flex items-center">
-      <button
-        @click="toggleDrawer"
-        class="relative group flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 hover:from-teal-500 hover:to-emerald-600 text-white rounded-2xl shadow-xl shadow-teal-600/30 hover:shadow-teal-600/50 hover:scale-105 active:scale-95 transition-all duration-200 border border-teal-400/30"
-        title="Yapay Zeka Klinik Asistanı"
-      >
-        <span class="absolute -top-1 -right-1 flex h-3 w-3">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-300 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-400"></span>
-        </span>
-        <Icon name="heroicons:sparkles" class="w-5 h-5 text-teal-100 group-hover:rotate-12 transition-transform duration-300" />
-        <span class="text-xs font-bold tracking-wide">AI Asistan</span>
-      </button>
-    </div>
 
     <!-- Asistan Modal / Pencere -->
     <Transition

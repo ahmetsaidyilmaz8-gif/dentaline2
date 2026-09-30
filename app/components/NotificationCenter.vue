@@ -4,7 +4,7 @@
     <button
       @click="toggleDropdown"
       class="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 focus:outline-none"
-      title="Bildirimler, Hatırlatıcılar ve Geri Çağırma (Recall) Merkezi"
+      title="Bildirimler, Hatırlatıcılar ve Randevu Takibi"
     >
       <Icon name="heroicons:bell" class="w-6 h-6" />
       
@@ -36,7 +36,7 @@
             <span class="text-xl">🔔</span>
             <div>
               <h3 class="font-bold text-slate-800 dark:text-white text-sm leading-tight">Bildirim & Hatırlatma Merkezi</h3>
-              <p class="text-[11px] text-slate-400">Tedavi/Ödeme takibi, recall ve randevular</p>
+              <p class="text-[11px] text-slate-400">Tedavi/Ödeme takibi ve randevular</p>
             </div>
           </div>
           <div class="flex items-center gap-1.5">
@@ -69,9 +69,9 @@
           </div>
         </div>
 
-        <!-- Sekmeler: Hatırlatıcılar | Geri Çağırma | Randevular | Gizlenenler -->
+        <!-- Sekmeler: Hatırlatıcılar | Randevular -->
         <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/20">
-          <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl overflow-x-auto">
+          <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl">
             <!-- 1. Hatırlatıcılar Sekmesi -->
             <button
               type="button"
@@ -80,7 +80,7 @@
                 activeSubTab === 'reminders'
                   ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm font-bold'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200',
-                'flex-1 py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 whitespace-nowrap min-w-[90px]'
+                'flex-1 py-1.5 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 whitespace-nowrap'
               ]"
             >
               <span>⏰ Hatırlatma</span>
@@ -92,27 +92,7 @@
               </span>
             </button>
 
-            <!-- 2. Geri Çağırma (Recall) Sekmesi -->
-            <button
-              type="button"
-              @click="activeSubTab = 'recalls'"
-              :class="[
-                activeSubTab === 'recalls'
-                  ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200',
-                'flex-1 py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 whitespace-nowrap min-w-[90px]'
-              ]"
-            >
-              <span>⚠️ Recall</span>
-              <span
-                v-if="activeRecalls.length > 0"
-                class="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-extrabold"
-              >
-                {{ activeRecalls.length }}
-              </span>
-            </button>
-
-            <!-- 3. Randevular Sekmesi -->
+            <!-- 2. Randevular Sekmesi -->
             <button
               type="button"
               @click="activeSubTab = 'appointments'"
@@ -120,7 +100,7 @@
                 activeSubTab === 'appointments'
                   ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm font-bold'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200',
-                'flex-1 py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 whitespace-nowrap min-w-[90px]'
+                'flex-1 py-1.5 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 whitespace-nowrap'
               ]"
             >
               <span>📅 Randevu</span>
@@ -129,27 +109,6 @@
                 class="px-1.5 py-0.2 bg-teal-500 text-white rounded-full text-[10px] font-extrabold"
               >
                 {{ todayNotifications.length }}
-              </span>
-            </button>
-
-            <!-- 4. Gizlenenler Sekmesi -->
-            <button
-              type="button"
-              @click="activeSubTab = 'hidden'"
-              :class="[
-                activeSubTab === 'hidden'
-                  ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300',
-                'py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 whitespace-nowrap'
-              ]"
-              title="Tamamlanmadı/Gizle seçeneğiyle gizlenen bildirimler"
-            >
-              <span>👁️ Gizlenen</span>
-              <span
-                v-if="totalHiddenCount > 0"
-                class="px-1.5 py-0.2 bg-slate-400 text-white rounded-full text-[10px] font-bold"
-              >
-                {{ totalHiddenCount }}
               </span>
             </button>
           </div>
@@ -466,157 +425,8 @@
             </div>
           </div>
 
-          <!-- 2. GERİ ÇAĞIRMA (RECALL) LİSTESİ -->
-          <div v-else-if="activeSubTab === 'recalls'" class="space-y-2.5">
-            <div class="flex items-center justify-between px-1 py-0.5 text-xs">
-              <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Recall Kontrolleri
-              </span>
-              <span class="text-[11px] text-slate-400">Toplam: {{ activeRecalls.length }}</span>
-            </div>
-
-            <div v-if="isLoadingRecalls" class="py-10 text-center text-slate-400 text-xs">
-              <Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin mx-auto mb-2 text-teal-600" />
-              <span>Geri çağırma listesi kontrol ediliyor...</span>
-            </div>
-
-            <div v-else-if="activeRecalls.length === 0" class="py-10 text-center flex flex-col items-center gap-2">
-              <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
-                ✓
-              </div>
-              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Aktif recall bildirimi yok</span>
-              <span class="text-[11px] text-slate-400 max-w-xs">
-                Tüm kontroller güncel veya işlendi.
-              </span>
-            </div>
-
-            <div
-              v-else
-              v-for="item in activeRecalls"
-              :key="item.patientId"
-              class="p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm space-y-2.5"
-            >
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0 flex-1">
-                  <NuxtLink
-                    :to="`/patients/${item.patientId}`"
-                    @click="isOpen = false"
-                    class="font-bold text-sm text-slate-800 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors inline-flex items-center gap-1 truncate"
-                  >
-                    <span>{{ item.fullName }}</span>
-                    <Icon name="heroicons:arrow-top-right-on-square" class="w-3.5 h-3.5 opacity-60 shrink-0" />
-                  </NuxtLink>
-                  <p class="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-0.5 flex items-center gap-1">
-                    <span>⚠️</span>
-                    <span>{{ item.reason }}</span>
-                  </p>
-                </div>
-
-                <span class="px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[10px] font-bold border border-rose-200/60 shrink-0">
-                  {{ item.daysPassed }} gün önce
-                </span>
-              </div>
-
-              <div class="text-[11px] text-slate-400 flex items-center gap-2">
-                <span>Son İşlem: <strong>{{ formatDate(item.lastTreatmentDate) }}</strong></span>
-                <span v-if="item.phone" class="font-mono text-slate-500">• {{ item.phone }}</span>
-              </div>
-
-              <!-- Tek Tıkla WhatsApp Hatırlatma Butonu -->
-              <button
-                type="button"
-                @click="handleSendRecallReminder(item)"
-                class="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-3 bg-[#16a34a] hover:bg-[#15803d] active:scale-98 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
-              >
-                <Icon name="heroicons:chat-bubble-left-right" class="w-3.5 h-3.5" />
-                <span>💬 WhatsApp ile Kontrole Çağır</span>
-              </button>
-
-              <!-- Mini Erteleme Seçici Popover -->
-              <div
-                v-if="snoozingItemId === `recall-${item.patientId}`"
-                class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 space-y-2 animate-fadeIn"
-              >
-                <div class="flex items-center justify-between text-[11px] font-bold text-amber-900 dark:text-amber-200">
-                  <span>⏱️ Recall ne zamana kadar ertelensin?</span>
-                  <button type="button" @click="snoozingItemId = null" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <button
-                    type="button"
-                    @click="applySnoozeRecall(item.patientId, 3)"
-                    class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-amber-200 dark:border-slate-700 shadow-sm"
-                  >
-                    +3 Gün
-                  </button>
-                  <button
-                    type="button"
-                    @click="applySnoozeRecall(item.patientId, 7)"
-                    class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-amber-200 dark:border-slate-700 shadow-sm"
-                  >
-                    +1 Hafta
-                  </button>
-                  <button
-                    type="button"
-                    @click="applySnoozeRecall(item.patientId, 30)"
-                    class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-amber-200 dark:border-slate-700 shadow-sm"
-                  >
-                    +1 Ay
-                  </button>
-                </div>
-                <div class="flex items-center gap-1.5 pt-1">
-                  <input
-                    type="date"
-                    v-model="customSnoozeDate"
-                    class="py-1 px-2 text-xs border border-amber-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 flex-1 outline-none"
-                  />
-                  <button
-                    type="button"
-                    @click="applyCustomSnoozeRecall(item.patientId)"
-                    class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold"
-                  >
-                    Ertele
-                  </button>
-                </div>
-              </div>
-
-              <!-- 3 STANDART AKSİYON BUTONU: [✓ Tamamlandı] - [⏱ Ertelendi] - [🗑 Sil] -->
-              <div class="pt-1 flex items-center gap-1.5 border-t border-slate-100 dark:border-slate-800/80">
-                <button
-                  type="button"
-                  @click="handleCompleteRecall(item.patientId)"
-                  class="flex-1 py-1.5 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
-                  title="Tamamlandı: Kontrol yapıldı, bildirim kalıcı kapatılsın"
-                >
-                  <Icon name="heroicons:check" class="w-3.5 h-3.5" />
-                  <span>Tamamlandı</span>
-                </button>
-
-                <button
-                  type="button"
-                  @click="toggleSnooze(`recall-${item.patientId}`)"
-                  class="flex-1 py-1.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/50 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
-                  title="Ertelendi: İleri bir tarihe ertele"
-                >
-                  <Icon name="heroicons:clock" class="w-3.5 h-3.5" />
-                  <span>Ertelendi</span>
-                </button>
-
-                <button
-                  type="button"
-                  @click="handlePermanentDeleteRecall(item.patientId)"
-                  class="flex-1 py-1.5 px-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/50 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
-                  title="Sil: Bildirimi veritabanından kalıcı olarak sil"
-                >
-                  <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
-                  <span>Sil</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. YAKLAŞAN RANDEVULAR LİSTESİ -->
-          <div v-else-if="activeSubTab === 'appointments'" class="space-y-3">
+          <!-- 2. YAKLAŞAN RANDEVULAR LİSTESİ -->
+          <div v-else class="space-y-3">
             <div class="flex items-center justify-between px-1 py-0.5 text-xs">
               <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 Randevu Takibi
@@ -822,115 +632,6 @@
               </div>
             </div>
           </div>
-
-          <!-- 4. GİZLENEN BİLDİRİMLER ALANI (İhtiyaç olursa oradan bakılabilsin) -->
-          <div v-else class="space-y-3">
-            <div class="flex items-center justify-between px-1 py-0.5 text-xs">
-              <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Gizlenen Bildirimler
-              </span>
-              <span class="text-[11px] text-slate-400">Toplam: {{ totalHiddenCount }}</span>
-            </div>
-
-            <div v-if="totalHiddenCount === 0" class="py-10 text-center flex flex-col items-center gap-2">
-              <span class="text-3xl opacity-50">👁️</span>
-              <span class="text-xs font-medium text-slate-400">Gizlenmiş herhangi bir bildirim bulunmuyor.</span>
-              <span class="text-[11px] text-slate-400">Bir bildirimi "Gizle" dediğinizde arayüzü kalabalık etmemesi için buraya taşınır.</span>
-            </div>
-
-            <div v-else class="space-y-2.5">
-              <!-- Gizlenen Hatırlatıcılar -->
-              <div v-for="item in hiddenReminders" :key="item._id" class="p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                      {{ item.category === 'payment' ? 'Gizlenen Ödeme' : 'Gizlenen Tedavi' }}
-                    </span>
-                    <h5 class="font-bold text-xs text-slate-800 dark:text-white mt-1">{{ item.patientName || 'İsimsiz' }}</h5>
-                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{{ item.note }}</p>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ formatDate(item.targetDate) }}</span>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <button
-                    type="button"
-                    @click="unhideReminder(item._id)"
-                    class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
-                  >
-                    <Icon name="heroicons:arrow-uturn-left" class="w-3.5 h-3.5" />
-                    <span>Geri Getir</span>
-                  </button>
-                  <button
-                    type="button"
-                    @click="completeReminder(item._id)"
-                    class="px-2.5 py-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-xs font-bold transition-all"
-                  >
-                    Kalıcı Sil
-                  </button>
-                </div>
-              </div>
-
-              <!-- Gizlenen Recall'lar -->
-              <div v-for="item in hiddenRecallsList" :key="item.patientId" class="p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
-                      Gizlenen Recall
-                    </span>
-                    <h5 class="font-bold text-xs text-slate-800 dark:text-white mt-1">{{ item.fullName }}</h5>
-                    <p class="text-xs text-rose-600 dark:text-rose-400 mt-0.5">{{ item.reason }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <button
-                    type="button"
-                    @click="unhideRecall(item.patientId)"
-                    class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
-                  >
-                    <Icon name="heroicons:arrow-uturn-left" class="w-3.5 h-3.5" />
-                    <span>Geri Getir</span>
-                  </button>
-                  <button
-                    type="button"
-                    @click="handleCompleteRecall(item.patientId)"
-                    class="px-2.5 py-1 text-rose-500 hover:bg-rose-50 rounded-lg text-xs font-bold transition-all"
-                  >
-                    Kalıcı Sil
-                  </button>
-                </div>
-              </div>
-
-              <!-- Gizlenen Randevular -->
-              <div v-for="item in hiddenAppointmentsList" :key="item.id" class="p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300">
-                      Gizlenen Randevu
-                    </span>
-                    <h5 class="font-bold text-xs text-slate-800 dark:text-white mt-1">{{ item.patientName }} ({{ item.time }})</h5>
-                    <p class="text-xs text-slate-500 mt-0.5">{{ item.procedure }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <button
-                    type="button"
-                    @click="unhideAppointment(item.id)"
-                    class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
-                  >
-                    <Icon name="heroicons:arrow-uturn-left" class="w-3.5 h-3.5" />
-                    <span>Geri Getir</span>
-                  </button>
-                  <button
-                    type="button"
-                    @click="handleCompleteAppointment(item.id)"
-                    class="px-2.5 py-1 text-rose-500 hover:bg-rose-50 rounded-lg text-xs font-bold transition-all"
-                  >
-                    Kalıcı Sil
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Panel Altlığı -->
@@ -1007,7 +708,7 @@ const {
 const { formatDate } = useUtils();
 
 const isOpen = ref(false);
-const activeSubTab = ref<'reminders' | 'recalls' | 'appointments' | 'hidden'>('reminders');
+const activeSubTab = ref<'reminders' | 'appointments'>('reminders');
 const reminderFilter = ref<'due' | 'all'>('due');
 const dropdownRef = ref<HTMLDivElement | null>(null);
 const isNewReminderModalOpen = ref(false);
@@ -1376,9 +1077,9 @@ const totalHiddenCount = computed(() => {
   return hiddenReminders.value.length + hiddenRecallsList.value.length + hiddenAppointmentsList.value.length;
 });
 
-// Toplam Kırmızı Sayaç Rozeti (Vakti gelen Hatırlatıcılar + Aktif Recall + Bugünkü Randevular)
+// Toplam Kırmızı Sayaç Rozeti (Vakti gelen Hatırlatıcılar + Bugünkü Randevular)
 const totalBadgeCount = computed(() => {
-  return activeDueReminders.value.length + activeRecalls.value.length + todayNotifications.value.length;
+  return activeDueReminders.value.length + todayNotifications.value.length;
 });
 
 const openNewReminderModal = () => {
@@ -1392,7 +1093,6 @@ const onReminderCreated = () => {
 
 const refreshAll = () => {
   loadNotifications();
-  loadRecalls();
   loadReminders();
 };
 
@@ -1403,8 +1103,6 @@ const toggleDropdown = () => {
     // Varsayılan sekmeyi akıllıca seç
     if (activeDueReminders.value.length > 0) {
       activeSubTab.value = 'reminders';
-    } else if (activeRecalls.value.length > 0) {
-      activeSubTab.value = 'recalls';
     } else if (todayNotifications.value.length > 0) {
       activeSubTab.value = 'appointments';
     }
