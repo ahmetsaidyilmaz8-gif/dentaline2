@@ -83,7 +83,20 @@ export default defineEventHandler(async (event) => {
       };
     });
 
+    const recentPayouts = await DoctorPayout.find()
+      .populate('doctorId', 'name title')
+      .sort({ date: -1, createdAt: -1 })
+      .limit(50)
+      .lean();
+
     return {
+      totalClinicCollections: totalCollections,
+      totalDoctorEarnings,
+      totalDoctorPayouts: totalDoctorPaid,
+      totalPendingDoctorEarnings,
+      totalClinicCash: clinicNetCash,
+      doctorBalances: doctorDetails,
+      recentPayouts,
       summary: {
         totalCollections,
         totalDoctorEarnings,

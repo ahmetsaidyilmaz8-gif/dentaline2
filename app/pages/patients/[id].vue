@@ -99,15 +99,6 @@
           <div>
             <div class="flex items-center justify-between">
               <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">İletişim Bilgileri</span>
-              <button
-                type="button"
-                @click="openPatientEditModal"
-                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
-                title="İletişim Bilgilerini Düzenle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                <span>Düzenle</span>
-              </button>
             </div>
             <div class="mt-2 space-y-2 text-slate-600 dark:text-slate-300">
               <div class="flex items-center justify-between">
@@ -207,15 +198,6 @@
           <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
             <div class="flex items-center justify-between">
               <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Kişisel Bilgiler</span>
-              <button
-                type="button"
-                @click="openPatientEditModal"
-                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
-                title="Kişisel Bilgileri Düzenle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                <span>Düzenle</span>
-              </button>
             </div>
             <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-slate-600 dark:text-slate-300 font-medium">
               <div>
@@ -241,15 +223,6 @@
           <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
             <div class="flex items-center justify-between">
               <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Acil Durum İrtibatı</span>
-              <button
-                type="button"
-                @click="openPatientEditModal"
-                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold inline-flex items-center gap-1 py-0.5 px-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
-                title="Acil Durum İrtibatını Düzenle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                <span>Düzenle</span>
-              </button>
             </div>
             <div class="mt-2 text-slate-600 dark:text-slate-300 space-y-1.5 font-medium">
               <div class="text-slate-800 dark:text-slate-200 font-bold">{{ patientData.patient.emergencyContact || '—' }}</div>
@@ -709,7 +682,7 @@
           <div class="flex items-center justify-between">
             <h3 class="font-bold text-slate-700 dark:text-slate-300 text-sm tracking-wider uppercase">Randevu Geçmişi ve Takvimi</h3>
             <button
-              @click="isAppointmentModalOpen = true"
+              @click="openNewAppointmentModal"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold active:scale-95 transition-all shadow-sm"
             >
               <Icon name="heroicons:plus" class="w-3.5 h-3.5" />
@@ -768,6 +741,14 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex items-center justify-end gap-1">
+                        <!-- Randevu Düzenle Butonu -->
+                        <button
+                          @click="openEditAppointmentModal(appt)"
+                          class="p-1 bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-teal-950/40 text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 rounded border border-slate-200 dark:border-slate-700 hover:border-teal-300 transition-colors"
+                          title="Randevuyu Düzenle"
+                        >
+                          <Icon name="heroicons:pencil-square" class="w-4 h-4" />
+                        </button>
                         <button
                           v-if="appt.status === 'pending' || appt.status === 'postponed'"
                           @click="updateAppointmentStatus(appt._id, 'completed')"
@@ -1571,10 +1552,10 @@
       </template>
     </AppModal>
 
-    <!-- C. Yeni Randevu Modalı -->
+    <!-- C. Randevu Modalı (Ekleme / Düzenleme) -->
     <AppModal
       :isOpen="isAppointmentModalOpen"
-      title="📅 Randevu Oluşturma Formu"
+      :title="editingAppointmentId ? '✏️ Randevuyu Düzenle' : '📅 Randevu Oluşturma Formu'"
       width="md"
       @close="isAppointmentModalOpen = false"
     >
@@ -1631,6 +1612,20 @@
             class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:focus:ring-teal-500/20 text-sm transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
           ></textarea>
         </div>
+
+        <!-- Düzenleme Modunda Durum Değiştirme -->
+        <div v-if="editingAppointmentId">
+          <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Randevu Durumu</label>
+          <select
+            v-model="appointmentForm.status"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:focus:ring-teal-500/20 text-sm transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-medium"
+          >
+            <option value="pending">Planlandı / Bekliyor</option>
+            <option value="completed">Tamamlandı</option>
+            <option value="postponed">Ertelendi</option>
+            <option value="cancelled">İptal Edildi</option>
+          </select>
+        </div>
       </div>
 
       <template #footer>
@@ -1645,7 +1640,7 @@
           :disabled="isSubmitting"
           class="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white rounded-xl text-sm font-bold shadow-sm transition-all"
         >
-          Randevuyu Kaydet
+          {{ editingAppointmentId ? 'Değişiklikleri Kaydet' : 'Randevuyu Kaydet' }}
         </button>
       </template>
     </AppModal>
@@ -2929,6 +2924,7 @@ const isPaymentModalOpen = ref(false);
 const isAppointmentModalOpen = ref(false);
 const editingTreatmentId = ref(null);
 const editingPaymentId = ref(null);
+const editingAppointmentId = ref(null);
 
 // Hatırlatıcı Modal Durumları
 const isPatientReminderModalOpen = ref(false);
@@ -3073,6 +3069,7 @@ const appointmentForm = ref({
   date: todayStr(),
   time: '09:00',
   duration: 30,
+  status: 'pending',
   notes: ''
 });
 
@@ -3434,7 +3431,43 @@ const deleteLedgerItem = async (item) => {
   }
 };
 
-// Yeni Randevu Ekle (Yerel 0ms + Arka Plan Kuyruk)
+// Yeni Randevu Ekleme Modalını Temiz Aç
+const openNewAppointmentModal = () => {
+  editingAppointmentId.value = null;
+  appointmentForm.value = {
+    procedure: '',
+    date: todayStr(),
+    time: '09:00',
+    duration: 30,
+    status: 'pending',
+    notes: ''
+  };
+  isAppointmentModalOpen.value = true;
+};
+
+// Randevu Düzenleme Modalını Aç
+const openEditAppointmentModal = (appt) => {
+  editingAppointmentId.value = appt._id;
+  let dStr = todayStr();
+  if (appt.date) {
+    if (typeof appt.date === 'string' && appt.date.includes('T')) {
+      dStr = appt.date.split('T')[0];
+    } else {
+      dStr = String(appt.date).substring(0, 10);
+    }
+  }
+  appointmentForm.value = {
+    procedure: appt.procedure || '',
+    date: dStr,
+    time: appt.time || '09:00',
+    duration: appt.duration || 30,
+    status: appt.status || 'pending',
+    notes: appt.notes || ''
+  };
+  isAppointmentModalOpen.value = true;
+};
+
+// Yeni Randevu Ekle veya Mevcut Randevuyu Düzenle
 const addAppointment = async () => {
   if (!appointmentForm.value.procedure || !appointmentForm.value.date || !appointmentForm.value.time) {
     window.dispatchEvent(new CustomEvent('toast-message', {
@@ -3446,29 +3479,50 @@ const addAppointment = async () => {
     isSubmitting.value = true;
     const strPid = String(patientId);
 
-    await $fetch('/api/appointments', {
-      method: 'POST',
-      body: {
-        patientId: strPid,
-        ...appointmentForm.value
-      }
-    });
+    if (editingAppointmentId.value) {
+      await $fetch(`/api/appointments/${editingAppointmentId.value}`, {
+        method: 'PUT',
+        body: {
+          patientId: strPid,
+          ...appointmentForm.value
+        }
+      });
 
-    window.dispatchEvent(new CustomEvent('toast-message', {
-      detail: {
-        message: 'Randevu başarıyla planlandı.',
-        type: 'success'
-      }
-    }));
+      window.dispatchEvent(new CustomEvent('toast-message', {
+        detail: {
+          message: 'Randevu başarıyla güncellendi.',
+          type: 'success'
+        }
+      }));
+    } else {
+      await $fetch('/api/appointments', {
+        method: 'POST',
+        body: {
+          patientId: strPid,
+          ...appointmentForm.value
+        }
+      });
+
+      window.dispatchEvent(new CustomEvent('toast-message', {
+        detail: {
+          message: 'Randevu başarıyla planlandı.',
+          type: 'success'
+        }
+      }));
+    }
 
     isAppointmentModalOpen.value = false;
-    appointmentForm.value = { procedure: '', date: todayStr(), time: '09:00', duration: 30, notes: '' };
+    editingAppointmentId.value = null;
+    appointmentForm.value = { procedure: '', date: todayStr(), time: '09:00', duration: 30, status: 'pending', notes: '' };
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
-      detail: { message: 'Randevu eklenirken hata oluştu.', type: 'error' }
+      detail: {
+        message: editingAppointmentId.value ? 'Randevu güncellenirken hata oluştu.' : 'Randevu eklenirken hata oluştu.',
+        type: 'error'
+      }
     }));
   } finally {
     isSubmitting.value = false;

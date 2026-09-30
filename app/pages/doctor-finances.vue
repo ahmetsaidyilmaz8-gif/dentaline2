@@ -134,6 +134,10 @@ async function loadData() {
     doctorsList.value = ((doctorsRes as any[]) || []).filter(
       (d: any) => !d.name?.toLowerCase().includes('klinik') && d.username !== 'klinik'
     );
+    const msy = doctorsList.value.find((d: any) => d.name?.toLowerCase().includes('selman'));
+    if (msy && (selectedReportDoctorId.value === 'all' || !selectedReportDoctorId.value)) {
+      selectedReportDoctorId.value = msy._id;
+    }
     await loadMonthlyReport();
   } catch (err: any) {
     showNotification('error', err.data?.message || 'Veriler yüklenirken hata oluştu.');
