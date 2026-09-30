@@ -61,8 +61,8 @@ export default defineEventHandler(async (event) => {
       const patientIds = patients.map((p: any) => p._id);
 
       const [treatments, payments] = await Promise.all([
-        Treatment.find({ patientId: { $in: patientIds } }, 'patientId fee').lean(),
-        Payment.find({ patientId: { $in: patientIds } }, 'patientId amount').lean()
+        Treatment.find({ patientId: { $in: patientIds } } as any, 'patientId fee').lean(),
+        Payment.find({ patientId: { $in: patientIds } } as any, 'patientId amount').lean()
       ]);
 
       const feeMap = new Map<string, number>();
