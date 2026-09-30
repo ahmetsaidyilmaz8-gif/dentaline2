@@ -1,6 +1,6 @@
 import { Payment } from '../../models/Payment';
+import { User } from '../../models/User';
 
-// Belirli bir ödeme kaydını günceller
 export default defineEventHandler(async (event) => {
   try {
     const id = event.context.params?.id;
@@ -12,8 +12,30 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event);
-    const payment = await Payment.findByIdAndUpdate(id, body, { new: true, runValidators: true });
+    if (body.doctorId === '' || body.doctorId === undefined) {
+      delete body.doctorId;
+    }
 
+    if (body.doctorId || body.amount !== undefined) {
+      const existingPayment = await Payment.findById(id);
+      if (existingPayment) {
+        const targetDoctorId = body.doctorId || existingPayment.doctorId;
+        if (targetDoctorId) {
+          const targetDoctor = await User.findById(targetDoctorId);
+          if (targetDoctor) {
+            const type = targetDoctor.type || 'percentage';
+            if (type === 'percentage') {
+              const doctorRate = targetDoctor.rate !== undefined ? targetDoctor.rate : 30;
+              const amt = body.amount !== undefined ? Number(body.amount) : existingPayment.amount;
+              body.doctorRate = doctorRate;
+              body.doctorEarning = Math.round(amt * (doctorRate / 100) * 100) / 100;
+            }
+          }
+        }
+      }
+    }
+
+    const payment = await Payment.findByIdAndUpdate(id, body, { new: true, runValidators: true });
     if (!payment) {
       throw createError({
         statusCode: 404,

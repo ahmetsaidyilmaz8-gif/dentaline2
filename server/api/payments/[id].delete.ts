@@ -1,6 +1,5 @@
 import { Payment } from '../../models/Payment';
 
-// Belirli bir ödeme kaydını siler
 export default defineEventHandler(async (event) => {
   try {
     const id = event.context.params?.id;

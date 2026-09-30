@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// Tedavi (Treatment) Şeması - Yapılan her tedavi hasta için bir borç girdisi oluşturur
+// Tedavi (Treatment) Şeması
 const treatmentSchema = new mongoose.Schema({
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -27,9 +27,23 @@ const treatmentSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: '',
+  },
+  doctorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true
   }
 }, {
   timestamps: true
 });
 
-export const Treatment = mongoose.models.Treatment || mongoose.model('Treatment', treatmentSchema);
+treatmentSchema.index({ doctorId: 1, date: -1 });
+treatmentSchema.index({ patientId: 1, date: -1 });
+treatmentSchema.index({ date: -1 });
+treatmentSchema.index({ tooth: 1 });
+treatmentSchema.index({ createdAt: -1 });
+
+if (mongoose.models.Treatment) {
+  delete mongoose.models.Treatment;
+}
+export const Treatment = mongoose.model('Treatment', treatmentSchema);

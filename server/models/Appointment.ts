@@ -31,8 +31,8 @@ const appointmentSchema = new mongoose.Schema({
     required: [true, 'Tedavi/İşlem türü zorunludur.'],
   },
   status: {
-    type: String, // pending (bekliyor), completed (tamamlandı), cancelled (iptal), noshow (gelmedi)
-    enum: ['pending', 'completed', 'cancelled', 'noshow'],
+    type: String, // pending (bekliyor), completed (tamamlandı), cancelled (iptal), noshow (gelmedi), postponed (ertelendi)
+    enum: ['pending', 'completed', 'cancelled', 'noshow', 'postponed'],
     default: 'pending',
   },
   duration: {
@@ -42,12 +42,31 @@ const appointmentSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: '',
+  },
+  doctorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
 });
 
-// Nuxt geliştirme ortamında modelin güncel şemayla derlenmesini sağlamak için kontrol
+appointmentSchema.index({ doctorId: 1, date: 1, time: 1 });
+appointmentSchema.index({ date: 1, time: 1 });
+appointmentSchema.index({ patientId: 1, date: -1 });
+appointmentSchema.index({ status: 1 });
+appointmentSchema.index({ createdAt: -1 });
+
 if (mongoose.models.Appointment) {
   delete mongoose.models.Appointment;
 }

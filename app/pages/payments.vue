@@ -1971,12 +1971,15 @@ const loadPatients = async () => {
 
 const loadAll = async () => {
   isLoading.value = true;
-  const tasks = [loadStats(), loadLedger(currentPage.value), loadDoctors(), loadExpenses()];
-  if (activeFilter.value === 'debt') {
-    tasks.push(loadDebtors());
+  try {
+    const tasks = [loadStats(), loadLedger(currentPage.value), loadDoctors(), loadExpenses()];
+    if (activeFilter.value === 'debt') {
+      tasks.push(loadDebtors());
+    }
+    await Promise.allSettled(tasks);
+  } finally {
+    isLoading.value = false;
   }
-  await Promise.all(tasks);
-  isLoading.value = false;
 };
 
 const activeFilter = ref('all');

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// Ödeme (Payment) Şeması - Yapılan ödemeler hastanın toplam borcunu azaltır
+// Ödeme (Payment) Şeması
 const paymentSchema = new mongoose.Schema({
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,9 +25,44 @@ const paymentSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: '',
+  },
+  doctorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true
+  },
+  doctorRate: {
+    type: Number,
+    default: 0
+  },
+  doctorEarning: {
+    type: Number,
+    default: 0
+  },
+  isOrthodontic: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  orthodonticPlanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'OrthodonticPlan',
+    index: true
+  },
+  installmentNo: {
+    type: Number
   }
 }, {
   timestamps: true
 });
 
-export const Payment = mongoose.models.Payment || mongoose.model('Payment', paymentSchema);
+paymentSchema.index({ doctorId: 1, date: -1 });
+paymentSchema.index({ isOrthodontic: 1, date: -1 });
+paymentSchema.index({ patientId: 1, date: -1 });
+paymentSchema.index({ date: -1 });
+paymentSchema.index({ createdAt: -1 });
+
+if (mongoose.models.Payment) {
+  delete mongoose.models.Payment;
+}
+export const Payment = mongoose.model('Payment', paymentSchema);
