@@ -2,12 +2,16 @@ import { Reminder } from '../../models/Reminder';
 import { Patient } from '../../models/Patient';
 import { requireDoctor } from '../../utils/auth';
 
-function calculateReminderDate(targetDateStr: string, leadDays: number) {
-  const parts = targetDateStr.split('-').map(Number);
-  if (parts.length < 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
+function calculateReminderDate(targetDateStr: string, leadDays: number): string {
+  const [yStr, mStr, dStr] = targetDateStr.split('-');
+  const yNum = Number(yStr);
+  const mNum = Number(mStr);
+  const dNum = Number(dStr);
+
+  if (!yStr || !mStr || !dStr || Number.isNaN(yNum) || Number.isNaN(mNum) || Number.isNaN(dNum)) {
     return targetDateStr;
   }
-  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  const d = new Date(yNum, mNum - 1, dNum);
   d.setDate(d.getDate() - (Number(leadDays) || 0));
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
