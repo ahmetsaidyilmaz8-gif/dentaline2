@@ -25,10 +25,10 @@ export default defineEventHandler(async (event) => {
       filter.patientId = patientId;
     }
 
-    // Randevuları tarihe ve saate göre sıralı getir, hasta bilgilerini birleştir (populate)
     const appointments = await Appointment.find(filter)
       .populate('patientId', 'firstName lastName phone bloodType allergies')
-      .sort({ date: 1, time: 1 });
+      .sort({ date: 1, time: 1 })
+      .lean();
 
     return appointments;
   } catch (error: any) {
