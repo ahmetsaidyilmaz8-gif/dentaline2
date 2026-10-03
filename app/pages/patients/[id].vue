@@ -1091,8 +1091,20 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Ortodonti Anlaşma Künyesi</span>
-                <div class="text-sm font-bold text-slate-800 dark:text-white mt-0.5">
-                  {{ patientData.orthodonticPlan.bracketType }} | Başlangıç: {{ formatDate(patientData.orthodonticPlan.startDate) }}
+                <div class="text-sm font-bold text-slate-800 dark:text-white mt-0.5 flex flex-wrap items-center gap-2">
+                  <span>{{ patientData.orthodonticPlan.bracketType }} | Başlangıç: {{ formatDate(patientData.orthodonticPlan.startDate) }}</span>
+                  <span
+                    v-if="patientData.orthodonticPlan.planType === 'per_session' || (!patientData.orthodonticPlan.installments?.length)"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                  >
+                    Taksitsiz (Seans Başı)
+                  </span>
+                  <span
+                    v-else
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
+                  >
+                    Aylık Taksitli
+                  </span>
                 </div>
                 <div v-if="patientData.orthodonticPlan.diagnosis" class="text-xs text-slate-500 italic mt-0.5">
                   Tanı: {{ patientData.orthodonticPlan.diagnosis }}
@@ -1141,7 +1153,9 @@
                 </span>
               </div>
               <div class="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Ödenen Taksitler</span>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">
+                  {{ patientData.orthodonticPlan.planType === 'per_session' ? 'Toplam Tahsil Edilen' : 'Toplam Ödenen' }}
+                </span>
                 <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
                   {{ formatCurrency(calcPatientPlanPaid(patientData.orthodonticPlan)) }}
                 </span>
@@ -1209,6 +1223,21 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            <!-- Taksitsiz (Seans Başı) Bilgilendirme Kartı -->
+            <div v-else class="mt-4 p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon name="heroicons:banknotes" class="w-5 h-5" />
+              </div>
+              <div class="space-y-1">
+                <div class="text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                  Taksitsiz Tedavi (Seans Başı Tahsilat Modeli)
+                </div>
+                <p class="text-xs text-emerald-700/90 dark:text-emerald-400 leading-relaxed">
+                  Bu tedavi için aylık sabit taksit takvimi tanımlanmamıştır. Hasta koltuğa oturup seans aldıkça <b>"+ Seans Notu Ekle"</b> penceresinden girilen tahsilatlar otomatik olarak hekim primine işlenir ve hastanın tedavi borcundan düşülür.
+                </p>
               </div>
             </div>
           </div>
@@ -2005,6 +2034,17 @@
             </span>
           </div>
 
+          <!-- Kalan Tedavi Borcu Göstergesi -->
+          <div v-if="patientData?.orthodonticPlan" class="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-emerald-200/70 dark:border-emerald-800/50 flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+              <Icon name="heroicons:information-circle" class="w-4 h-4 text-emerald-600" />
+              <span>Güncel Tedavi Borcu:</span>
+            </span>
+            <span class="font-mono font-bold text-slate-800 dark:text-white">
+              Kalan: <b class="text-rose-500 font-bold">{{ formatCurrency(calcPatientPlanRemaining(patientData.orthodonticPlan)) }}</b> / Toplam: {{ formatCurrency(patientData.orthodonticPlan.totalAmount) }}
+            </span>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Tahsilat Tutarı (TL)</label>
@@ -2037,7 +2077,7 @@
           <div v-if="patientSessionForm.paymentAmount > 0" class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/50 flex items-start gap-1.5">
             <Icon name="heroicons:check-circle" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
             <span>
-              <b>{{ formatCurrency(patientSessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(patientSessionForm.doctorId) }} ({{ formatCurrency(Math.round(patientSessionForm.paymentAmount * getDoctorRate(patientSessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür.
+              <b>{{ formatCurrency(patientSessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(patientSessionForm.doctorId) }} ({{ formatCurrency(Math.round(patientSessionForm.paymentAmount * getDoctorRate(patientSessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür<span v-if="patientData?.orthodonticPlan"> (Tahsilat sonrası kalan borç: <b>{{ formatCurrency(Math.max(0, calcPatientPlanRemaining(patientData.orthodonticPlan) - patientSessionForm.paymentAmount)) }}</b>)</span>.
             </span>
           </div>
         </div>
@@ -2085,6 +2125,36 @@
       @close="isPatientPlanModalOpen = false"
     >
       <form @submit.prevent="savePatientPlan" class="space-y-4">
+        <!-- Ödeme Planı Türü -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">Ödeme Planı Türü <span class="text-rose-500">*</span></label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="patientPlanForm.planType = 'installments'"
+              class="p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              :class="patientPlanForm.planType === 'installments'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400'"
+            >
+              <Icon name="heroicons:calendar" class="w-3.5 h-3.5" />
+              <span>Aylık Taksitli</span>
+            </button>
+
+            <button
+              type="button"
+              @click="patientPlanForm.planType = 'per_session'"
+              class="p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              :class="patientPlanForm.planType === 'per_session'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400'"
+            >
+              <Icon name="heroicons:banknotes" class="w-3.5 h-3.5" />
+              <span>Taksitsiz (Seans Başı)</span>
+            </button>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-500 mb-1">Hekim <span class="text-rose-500">*</span></label>
@@ -2134,7 +2204,9 @@
             />
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">Süre (Ay) <span class="text-rose-500">*</span></label>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">
+              {{ patientPlanForm.planType === 'per_session' ? 'Tahmini Süre (Ay)' : 'Süre (Ay)' }} <span class="text-rose-500">*</span>
+            </label>
             <select
               v-model.number="patientPlanForm.durationMonths"
               class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-bold text-xs"
@@ -2149,11 +2221,21 @@
           </div>
         </div>
 
-        <div class="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 rounded-xl text-center text-xs">
+        <div v-if="patientPlanForm.planType === 'installments'" class="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 rounded-xl text-center text-xs">
           <span class="text-slate-500 dark:text-slate-400">Tahmini Aylık Taksit: </span>
           <span class="font-bold font-mono text-emerald-600 dark:text-emerald-400">
             {{ formatCurrency(Math.round((Math.max(0, (patientPlanForm.totalAmount || 0) - (patientPlanForm.downPayment || 0)) / (patientPlanForm.durationMonths || 1)) * 100) / 100) }} / Ay
           </span>
+        </div>
+
+        <div v-else class="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60 rounded-xl text-xs space-y-1.5">
+          <div class="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300 text-[11px]">
+            <span>Taksitsiz (Seans Başı Tahsilat)</span>
+            <span class="font-mono">Kalan Borç: {{ formatCurrency(Math.max(0, (patientPlanForm.totalAmount || 0) - (patientPlanForm.downPayment || 0))) }}</span>
+          </div>
+          <p class="text-[10px] text-emerald-700 dark:text-emerald-400 leading-relaxed font-medium">
+            💡 Sabit taksit oluşturulmaz. Hasta her seansa geldiğinde seans notuna girilen tahsilatlar doğrudan bu tutardan düşülür.
+          </p>
         </div>
 
         <div>
@@ -2189,7 +2271,7 @@
           :disabled="isSubmitting"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm"
         >
-          {{ isSubmitting ? 'Oluşturuluyor...' : 'Anlaşmayı Başlat' }}
+          {{ isSubmitting ? 'Oluşturuluyor...' : (patientPlanForm.planType === 'per_session' ? 'Anlaşmayı Başlat (Seans Başı Ödeme)' : 'Anlaşmayı Başlat & Taksitlendir') }}
         </button>
       </template>
     </AppModal>
@@ -3120,15 +3202,20 @@ const patientPlanForm = ref({
   downPayment: 5000,
   durationMonths: 10,
   startDate: todayStr(),
-  diagnosis: ''
+  diagnosis: '',
+  planType: 'installments'
 });
 
 const calcPatientPlanPaid = (plan) => {
   if (!plan) return 0;
+  // Hastaya ait doğrudan ortodonti etiketli / plan id'li tüm tahsilatları topla
+  const directOrthoPayments = (patientData.value?.payments || [])
+    .filter(p => (p.orthodonticPlanId && String(p.orthodonticPlanId) === String(plan._id)) || (p.isOrthodontic && (!p.orthodonticPlanId || String(p.orthodonticPlanId) === String(plan._id))))
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
   const instPaid = (plan.installments || [])
     .filter(i => i.status === 'paid')
     .reduce((sum, i) => sum + (i.paidAmount || i.amount || 0), 0);
-  return (plan.downPayment || 0) + instPaid;
+  return Math.max(directOrthoPayments, (plan.downPayment || 0) + instPaid);
 };
 
 const calcPatientPlanRemaining = (plan) => {
@@ -4190,7 +4277,8 @@ const openPatientPlanModal = () => {
     downPayment: 5000,
     durationMonths: 10,
     startDate: todayStr(),
-    diagnosis: ''
+    diagnosis: '',
+    planType: 'installments'
   };
   isPatientPlanModalOpen.value = true;
 };
@@ -4209,12 +4297,19 @@ const savePatientPlan = async () => {
       method: 'POST',
       body: {
         patientId,
-        ...patientPlanForm.value
+        ...patientPlanForm.value,
+        planType: patientPlanForm.value.planType || 'installments'
       }
     });
 
+    const isPerSession = patientPlanForm.value.planType === 'per_session';
     window.dispatchEvent(new CustomEvent('toast-message', {
-      detail: { message: 'Ortodonti tedavi protokolü ve taksitler başlatıldı.', type: 'success' }
+      detail: { 
+        message: isPerSession 
+          ? 'Ortodonti tedavi protokolü (Taksitsiz - Seans Başı Tahsilat) başlatıldı.' 
+          : 'Ortodonti tedavi protokolü ve taksitler başlatıldı.', 
+        type: 'success' 
+      }
     }));
 
     isPatientPlanModalOpen.value = false;

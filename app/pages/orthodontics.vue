@@ -213,19 +213,27 @@
               <!-- İlerleme Çubuğu & Finansal Durum -->
               <div class="mt-3 space-y-1.5">
                 <div class="flex items-center justify-between text-xs font-semibold">
-                  <span class="text-slate-500 dark:text-slate-400">Taksit İlerlemesi:</span>
-                  <span class="font-bold font-mono text-slate-700 dark:text-slate-200">
-                    {{ plan.summary.paidInstallmentsCount }} / {{ plan.summary.totalInstallmentsCount }} Taksit
+                  <span class="text-slate-500 dark:text-slate-400">
+                    {{ plan.summary?.isPerSession ? 'Ödeme Modeli:' : 'Taksit İlerlemesi:' }}
+                  </span>
+                  <span v-if="!plan.summary?.isPerSession" class="font-bold font-mono text-slate-700 dark:text-slate-200">
+                    {{ plan.summary?.paidInstallmentsCount || 0 }} / {{ plan.summary?.totalInstallmentsCount || 0 }} Taksit
+                  </span>
+                  <span v-else class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    Seans Başı (Taksitsiz)
                   </span>
                 </div>
                 <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                   <div
-                    class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${plan.summary.totalInstallmentsCount ? (plan.summary.paidInstallmentsCount / plan.summary.totalInstallmentsCount) * 100 : 0}%` }"
+                    class="h-2 rounded-full transition-all duration-300"
+                    :class="plan.summary?.isPerSession ? 'bg-emerald-500' : 'bg-indigo-600'"
+                    :style="{
+                      width: `${plan.totalAmount ? Math.min(100, Math.round(((plan.summary?.totalPaidOverall || 0) / plan.totalAmount) * 100)) : 0}%`
+                    }"
                   ></div>
                 </div>
                 <div class="flex items-center justify-between text-xs pt-1">
-                  <span class="text-slate-400">Kalan: <b class="font-mono text-rose-500 font-bold">{{ formatCurrency(plan.summary.remainingBalance) }}</b></span>
+                  <span class="text-slate-400">Kalan: <b class="font-mono text-rose-500 font-bold">{{ formatCurrency(plan.summary?.remainingBalance ?? plan.totalAmount) }}</b></span>
                   <span class="text-slate-400">Toplam: <b class="font-mono text-slate-700 dark:text-slate-200">{{ formatCurrency(plan.totalAmount) }}</b></span>
                 </div>
               </div>
@@ -517,6 +525,36 @@
           </div>
         </div>
 
+        <!-- Ödeme Modeli / Plan Türü -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Ödeme Planı Türü <span class="text-rose-500">*</span></label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="planForm.planType = 'installments'"
+              class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+              :class="planForm.planType === 'installments'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400'"
+            >
+              <Icon name="heroicons:calendar" class="w-4 h-4" />
+              <span>Aylık Sabit Taksitli</span>
+            </button>
+
+            <button
+              type="button"
+              @click="planForm.planType = 'per_session'"
+              class="p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+              :class="planForm.planType === 'per_session'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400'"
+            >
+              <Icon name="heroicons:banknotes" class="w-4 h-4" />
+              <span>Taksitsiz (Seans Başı)</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Toplam Tutar, Peşinat & Süre -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
@@ -544,7 +582,7 @@
 
           <div>
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
-              Tedavi Süresi (Ay / Taksit Sayısı) <span class="text-rose-500">*</span>
+              {{ planForm.planType === 'per_session' ? 'Tahmini Süre (Ay)' : 'Tedavi Süresi (Ay / Taksit Sayısı)' }} <span class="text-rose-500">*</span>
             </label>
             <div class="relative">
               <input
@@ -558,7 +596,7 @@
                 class="w-full px-3 py-2 pr-16 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs sm:text-sm font-mono font-bold text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
               />
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold pointer-events-none">
-                Taksit
+                {{ planForm.planType === 'per_session' ? 'Ay' : 'Taksit' }}
               </span>
             </div>
           </div>
@@ -575,8 +613,8 @@
           />
         </div>
 
-        <!-- Otomatik Taksitlendirme Önizleme Kutusu -->
-        <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60">
+        <!-- Otomatik Taksitlendirme veya Taksitsiz Bilgi Kutusu -->
+        <div v-if="planForm.planType === 'installments'" class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60">
           <div class="text-xs font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
             <Icon name="heroicons:calculator" class="w-4 h-4 text-indigo-600" />
             <span>Otomatik Taksit Hesaplama Simülasyonu</span>
@@ -597,6 +635,31 @@
               </span>
             </div>
           </div>
+        </div>
+
+        <div v-else class="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60 space-y-2">
+          <div class="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <Icon name="heroicons:check-badge" class="w-4 h-4 text-emerald-600" />
+              <span>Taksitsiz Tedavi Modeli (Seans Başı Tahsilat)</span>
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+              Sabit Takvimsiz
+            </span>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2 text-center text-xs">
+            <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-2xs">
+              <span class="text-[10px] text-slate-400 block font-semibold">Peşinat</span>
+              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(planForm.downPayment || 0) }}</span>
+            </div>
+            <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-2xs">
+              <span class="text-[10px] text-slate-400 block font-semibold">Kalan Tedavi Borcu</span>
+              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ formatCurrency(Math.max(0, (planForm.totalAmount || 0) - (planForm.downPayment || 0))) }}</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed font-medium">
+            💡 Sabit aylık taksit tablosu oluşturulmaz. Hasta her seansa geldiğinde "Seans Notu Ekle" ekranından girilen tahsilat miktarı doğrudan bu tedavi borcundan düşülür.
+          </p>
         </div>
 
         <!-- Tanı & Notlar -->
@@ -623,7 +686,7 @@
           :disabled="isSubmitting"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
         >
-          {{ isSubmitting ? 'Oluşturuluyor...' : 'Anlaşmayı Başlat & Taksitlendir' }}
+          {{ isSubmitting ? 'Oluşturuluyor...' : (planForm.planType === 'per_session' ? 'Anlaşmayı Başlat (Seans Başı Ödeme)' : 'Anlaşmayı Başlat & Taksitlendir') }}
         </button>
       </template>
     </AppModal>
@@ -754,6 +817,17 @@
             </span>
           </div>
 
+          <!-- Kalan Tedavi Borcu Göstergesi -->
+          <div v-if="selectedPatientPlan" class="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-emerald-200/70 dark:border-emerald-800/50 flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+              <Icon name="heroicons:information-circle" class="w-4 h-4 text-emerald-600" />
+              <span>Güncel Tedavi Borcu:</span>
+            </span>
+            <span class="font-mono font-bold text-slate-800 dark:text-white">
+              Kalan: <b class="text-rose-500 font-bold">{{ formatCurrency(selectedPatientPlan.summary?.remainingBalance ?? selectedPatientPlan.totalAmount) }}</b> / Toplam: {{ formatCurrency(selectedPatientPlan.totalAmount) }}
+            </span>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Tahsilat Tutarı (TL)</label>
@@ -786,7 +860,7 @@
           <div v-if="sessionForm.paymentAmount > 0" class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/50 flex items-start gap-1.5">
             <Icon name="heroicons:check-circle" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
             <span>
-              <b>{{ formatCurrency(sessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(sessionForm.doctorId) }} ({{ formatCurrency(Math.round(sessionForm.paymentAmount * getDoctorRate(sessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür.
+              <b>{{ formatCurrency(sessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(sessionForm.doctorId) }} ({{ formatCurrency(Math.round(sessionForm.paymentAmount * getDoctorRate(sessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür<span v-if="selectedPatientPlan"> (Tahsilat sonrası kalan borç: <b>{{ formatCurrency(Math.max(0, (selectedPatientPlan.summary?.remainingBalance ?? selectedPatientPlan.totalAmount) - sessionForm.paymentAmount)) }}</b>)</span>.
             </span>
           </div>
         </div>
@@ -1152,6 +1226,7 @@ const todayStr = () => new Date().toISOString().split('T')[0];
 const defaultPlanForm = () => ({
   patientId: '',
   doctorId: '',
+  planType: 'installments',
   bracketType: 'Metal Braket',
   totalAmount: 30000,
   downPayment: 5000,
@@ -1182,6 +1257,11 @@ const defaultSessionForm = () => ({
 
 const planForm = ref(defaultPlanForm());
 const sessionForm = ref(defaultSessionForm());
+
+const selectedPatientPlan = computed(() => {
+  if (!sessionForm.value.patientId) return null;
+  return plans.value.find(p => (p.patientId?._id || p.patientId) === sessionForm.value.patientId && p.status !== 'cancelled') || null;
+});
 
 const editPlanForm = ref({
   id: '',

@@ -83,31 +83,43 @@ export default defineEventHandler(async (event) => {
       });
       await createdPayment.save();
 
-      // 2. Eğer hastanın aktif ortodonti anlaşması varsa, vadesi gelmiş/ödenmemiş taksitlerinden düş
-      if (plan && plan.installments && plan.installments.length > 0) {
-        let unallocated = paymentAmount;
-        for (const inst of plan.installments) {
-          if (inst.status !== 'paid' && unallocated > 0) {
-            const needed = (inst.amount || 0) - (inst.paidAmount || 0);
-            if (unallocated >= needed) {
-              inst.status = 'paid';
-              inst.paidAmount = inst.amount;
-              inst.paymentDate = body.date;
-              inst.paymentId = createdPayment._id;
-              unallocated -= needed;
-            } else {
-              inst.paidAmount = (inst.paidAmount || 0) + unallocated;
-              inst.paymentDate = body.date;
-              inst.paymentId = createdPayment._id;
-              unallocated = 0;
+      // 2. Eğer hastanın aktif ortodonti anlaşması varsa, vadesi gelmiş/ödenmemiş taksitlerinden veya toplam borcundan düş
+      if (plan) {
+        if (plan.installments && plan.installments.length > 0) {
+          let unallocated = paymentAmount;
+          for (const inst of plan.installments) {
+            if (inst.status !== 'paid' && unallocated > 0) {
+              const needed = (inst.amount || 0) - (inst.paidAmount || 0);
+              if (unallocated >= needed) {
+                inst.status = 'paid';
+                inst.paidAmount = inst.amount;
+                inst.paymentDate = body.date;
+                inst.paymentId = createdPayment._id;
+                unallocated -= needed;
+              } else {
+                inst.paidAmount = (inst.paidAmount || 0) + unallocated;
+                inst.paymentDate = body.date;
+                inst.paymentId = createdPayment._id;
+                unallocated = 0;
+              }
             }
           }
-        }
 
-        // Tüm taksitler kapandıysa anlaşmayı tamamlandı yap
-        const allPaid = plan.installments.every((i: any) => i.status === 'paid');
-        if (allPaid && plan.status === 'active') {
-          plan.status = 'completed';
+          // Tüm taksitler kapandıysa anlaşmayı tamamlandı yap
+          const allPaid = plan.installments.every((i: any) => i.status === 'paid');
+          if (allPaid && plan.status === 'active') {
+            plan.status = 'completed';
+          }
+        } else {
+          // Taksitsiz anlaşma: toplam tahsilatları kontrol et
+          const allPayments = await Payment.aggregate([
+            { $match: { orthodonticPlanId: plan._id } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+          ]);
+          const currentTotal = (allPayments[0]?.total || 0) + paymentAmount;
+          if (currentTotal >= (plan.totalAmount || 0) && plan.status === 'active') {
+            plan.status = 'completed';
+          }
         }
 
         await plan.save();

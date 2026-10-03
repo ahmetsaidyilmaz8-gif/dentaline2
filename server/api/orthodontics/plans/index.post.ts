@@ -30,36 +30,43 @@ export default defineEventHandler(async (event) => {
     const durationMonths = Math.max(1, parseInt(String(body.durationMonths), 10) || 1);
     const doctorId = body.doctorId || patient.doctorId || currentDoctor._id;
 
+    const isPerSession = body.planType === 'per_session' || body.hasInstallments === false;
+    const planType = isPerSession ? 'per_session' : 'installments';
+    const hasInstallments = !isPerSession;
+
     const remainingForInstallments = Math.max(0, totalAmount - downPayment);
     const baseInstallmentAmount = Math.floor((remainingForInstallments / durationMonths) * 100) / 100;
     const remainder = Math.round((remainingForInstallments - baseInstallmentAmount * durationMonths) * 100) / 100;
 
     const installments = [];
-    const [startYear, startMonth, startDay] = body.startDate.split('-').map(Number);
+    if (!isPerSession) {
+      const [startYear, startMonth, startDay] = body.startDate.split('-').map(Number);
+      for (let i = 1; i <= durationMonths; i++) {
+        const dueDateObj = new Date(startYear, startMonth - 1 + i, startDay);
+        const y = dueDateObj.getFullYear();
+        const m = String(dueDateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dueDateObj.getDate()).padStart(2, '0');
+        const dueDateStr = `${y}-${m}-${d}`;
+        const amount = i === 1 ? baseInstallmentAmount + remainder : baseInstallmentAmount;
 
-    for (let i = 1; i <= durationMonths; i++) {
-      const dueDateObj = new Date(startYear, startMonth - 1 + i, startDay);
-      const y = dueDateObj.getFullYear();
-      const m = String(dueDateObj.getMonth() + 1).padStart(2, '0');
-      const d = String(dueDateObj.getDate()).padStart(2, '0');
-      const dueDateStr = `${y}-${m}-${d}`;
-      const amount = i === 1 ? baseInstallmentAmount + remainder : baseInstallmentAmount;
-
-      installments.push({
-        installmentNo: i,
-        dueDate: dueDateStr,
-        amount: Math.round(amount * 100) / 100,
-        status: 'pending',
-        paidAmount: 0,
-        paymentDate: '',
-        paymentId: null,
-        notes: `${i}. Ay Taksiti`
-      });
+        installments.push({
+          installmentNo: i,
+          dueDate: dueDateStr,
+          amount: Math.round(amount * 100) / 100,
+          status: 'pending',
+          paidAmount: 0,
+          paymentDate: '',
+          paymentId: null,
+          notes: `${i}. Ay Taksiti`
+        });
+      }
     }
 
     const plan = new OrthodonticPlan({
       patientId: body.patientId,
       doctorId,
+      planType,
+      hasInstallments,
       totalAmount,
       downPayment,
       durationMonths,
@@ -73,12 +80,16 @@ export default defineEventHandler(async (event) => {
 
     await plan.save();
 
+    const treatmentNotes = isPerSession
+      ? `Ortodonti Tedavi Anlaşması (Taksitsiz - Seans Başı Tahsilat). Tahmini Süre: ${durationMonths} Ay. Toplam Tutar: ${totalAmount} TL.`
+      : `Ortodonti Tedavi Anlaşması (Aylık Taksitli). Süre: ${durationMonths} Ay. Toplam Tutar: ${totalAmount} TL.`;
+
     const treatment = new Treatment({
       patientId: body.patientId,
       date: body.startDate,
       procedure: `Ortodonti Tedavi Anlaşması (${plan.bracketType})`,
       fee: totalAmount,
-      notes: `Tahmini Süre: ${durationMonths} Ay. Toplam Tutar: ${totalAmount} TL.`,
+      notes: treatmentNotes,
       doctorId
     });
     await treatment.save();

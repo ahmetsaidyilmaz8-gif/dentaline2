@@ -56,6 +56,15 @@ const orthodonticPlanSchema = new mongoose.Schema({
     ref: 'Treatment',
     default: null
   },
+  planType: {
+    type: String,
+    enum: ['installments', 'per_session'],
+    default: 'installments'
+  },
+  hasInstallments: {
+    type: Boolean,
+    default: true
+  },
   totalAmount: {
     type: Number,
     required: [true, 'Toplam anlaşma tutarı zorunludur.'],
