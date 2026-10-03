@@ -62,6 +62,19 @@ const orthodonticSessionSchema = new mongoose.Schema({
     type: String,
     enum: ['completed', 'scheduled', 'cancelled'],
     default: 'completed'
+  },
+  paymentAmount: {
+    type: Number,
+    default: 0
+  },
+  paymentMethod: {
+    type: String,
+    default: 'cash'
+  },
+  paymentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Payment',
+    default: null
   }
 }, {
   timestamps: true

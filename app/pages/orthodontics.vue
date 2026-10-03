@@ -316,6 +316,10 @@
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                     Hekim: {{ s.doctorId?.name || 'Diş Hekimi' }}
                   </span>
+                  <span v-if="s.paymentAmount" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                    <Icon name="heroicons:banknotes" class="w-3 h-3 text-emerald-500" />
+                    <span>{{ formatCurrency(s.paymentAmount) }} Tahsil Edildi</span>
+                  </span>
                 </div>
 
                 <!-- Seans Notu -->
@@ -681,6 +685,20 @@
           </div>
         </div>
 
+        <!-- Hekim Seçimi -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">İşlemi Yapan Hekim <span class="text-rose-500">*</span></label>
+          <select
+            v-model="sessionForm.doctorId"
+            required
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-800 dark:text-white"
+          >
+            <option v-for="doc in doctorsList" :key="doc._id" :value="doc._id">
+              {{ doc.name }} (%{{ doc.rate }} Hak Ediş)
+            </option>
+          </select>
+        </div>
+
         <!-- Yapılan İşlem / Seans Notu -->
         <div>
           <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Bugün Yapılan İşlem (Seans Notu) <span class="text-rose-500">*</span></label>
@@ -721,6 +739,55 @@
               placeholder="Örn: 3/16 4.5 oz"
               class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 font-mono text-xs"
             />
+          </div>
+        </div>
+
+        <!-- Bu Seansta Alınan Tahsilat & Ödeme -->
+        <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+              <Icon name="heroicons:banknotes" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Bu Seansta Alınan Tahsilat (İsteğe Bağlı)</span>
+            </label>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+              Ana fiyattan düşer & hekime hak ediş yazar
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Tahsilat Tutarı (TL)</label>
+              <div class="relative">
+                <input
+                  v-model.number="sessionForm.paymentAmount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="0"
+                  class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-mono font-bold text-sm text-slate-800 dark:text-white"
+                />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">TL</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Ödeme Yöntemi</label>
+              <select
+                v-model="sessionForm.paymentMethod"
+                class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-800 dark:text-white"
+              >
+                <option value="cash">Nakit</option>
+                <option value="card">Kredi Kartı / POS</option>
+                <option value="transfer">Havale / EFT</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="sessionForm.paymentAmount > 0" class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/50 flex items-start gap-1.5">
+            <Icon name="heroicons:check-circle" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+            <span>
+              <b>{{ formatCurrency(sessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(sessionForm.doctorId) }} ({{ formatCurrency(Math.round(sessionForm.paymentAmount * getDoctorRate(sessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür.
+            </span>
           </div>
         </div>
 
@@ -1098,7 +1165,7 @@ const defaultPlanForm = () => ({
 const defaultSessionForm = () => ({
   patientId: '',
   planId: '',
-  doctorId: '',
+  doctorId: doctorsList.value[0]?._id ? String(doctorsList.value[0]._id) : '',
   sessionNumber: 1,
   date: todayStr(),
   time: '11:00',
@@ -1106,6 +1173,9 @@ const defaultSessionForm = () => ({
   archwireUpper: '',
   archwireLower: '',
   elastics: '',
+  paymentAmount: 0,
+  paymentMethod: 'cash',
+  paymentNotes: '',
   nextAppointmentDate: '',
   nextAppointmentNotes: ''
 });
@@ -1295,13 +1365,13 @@ const openSessionModal = (plan = null) => {
   if (plan) {
     sessionForm.value.patientId = plan.patientId?._id;
     sessionForm.value.planId = plan._id;
-    sessionForm.value.doctorId = plan.doctorId?._id || '';
+    sessionForm.value.doctorId = plan.doctorId?._id || plan.doctorId || (doctorsList.value[0]?._id ? String(doctorsList.value[0]._id) : '');
 
     // Bu hastanın kaçıncı seansı olduğunu bul
-    const patientSessions = sessions.value.filter(s => s.patientId?._id === plan.patientId?._id);
+    const patientSessions = sessions.value.filter(s => (s.patientId?._id || s.patientId) === (plan.patientId?._id || plan.patientId));
     sessionForm.value.sessionNumber = patientSessions.length + 1;
   } else if (doctorsList.value.length > 0) {
-    sessionForm.value.doctorId = doctorsList.value[0]._id;
+    sessionForm.value.doctorId = String(doctorsList.value[0]._id);
   }
 
   isSessionModalOpen.value = true;
@@ -1310,9 +1380,9 @@ const openSessionModal = (plan = null) => {
 const openEditSessionModal = (s) => {
   editingSessionId.value = s._id;
   sessionForm.value = {
-    patientId: s.patientId?._id,
+    patientId: s.patientId?._id || s.patientId,
     planId: s.planId,
-    doctorId: s.doctorId?._id || s.doctorId,
+    doctorId: s.doctorId?._id || s.doctorId || (doctorsList.value[0]?._id ? String(doctorsList.value[0]._id) : ''),
     sessionNumber: s.sessionNumber,
     date: s.date,
     time: s.time || '11:00',
@@ -1320,6 +1390,9 @@ const openEditSessionModal = (s) => {
     archwireUpper: s.archwireUpper || '',
     archwireLower: s.archwireLower || '',
     elastics: s.elastics || '',
+    paymentAmount: s.paymentAmount || 0,
+    paymentMethod: s.paymentMethod || 'cash',
+    paymentNotes: s.paymentNotes || '',
     nextAppointmentDate: s.nextAppointmentDate || '',
     nextAppointmentNotes: s.nextAppointmentNotes || ''
   };
@@ -1488,9 +1561,15 @@ const saveSession = async () => {
         method: 'POST',
         body: sessionForm.value
       });
+      const paymentMsg = sessionForm.value.paymentAmount > 0 
+        ? ` ve ${formatCurrency(sessionForm.value.paymentAmount)} tahsilat kasaya/hekime işlendi.` 
+        : '';
       window.dispatchEvent(new CustomEvent('toast-message', {
-        detail: { message: 'Seans notu başarıyla arşive kaydedildi.', type: 'success' }
+        detail: { message: `Seans notu başarıyla arşive kaydedildi${paymentMsg}`, type: 'success' }
       }));
+      if (sessionForm.value.paymentAmount > 0) {
+        window.dispatchEvent(new CustomEvent('refresh-stats'));
+      }
     }
 
     isSessionModalOpen.value = false;

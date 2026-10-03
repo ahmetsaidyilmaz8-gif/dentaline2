@@ -1251,6 +1251,10 @@
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {{ s.doctorId?.name || 'Diş Hekimi' }}
                       </span>
+                      <span v-if="s.paymentAmount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                        <Icon name="heroicons:banknotes" class="w-3 h-3" />
+                        {{ formatCurrency(s.paymentAmount) }} Tahsil Edildi
+                      </span>
                     </div>
 
                     <!-- Seans Notu -->
@@ -1943,7 +1947,7 @@
             class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-800 dark:text-white"
           >
             <option v-for="doc in clinicDoctors" :key="doc._id" :value="doc._id">
-              {{ doc.name }}
+              {{ doc.name }} (%{{ doc.rate }} Hak Ediş)
             </option>
           </select>
         </div>
@@ -1986,6 +1990,55 @@
               placeholder="3/16 4.5 oz"
               class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 font-mono text-xs"
             />
+          </div>
+        </div>
+
+        <!-- Bu Seansta Alınan Tahsilat & Ödeme -->
+        <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+              <Icon name="heroicons:banknotes" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Bu Seansta Alınan Tahsilat (İsteğe Bağlı)</span>
+            </label>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+              Ana fiyattan düşer & hekime hak ediş yazar
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Tahsilat Tutarı (TL)</label>
+              <div class="relative">
+                <input
+                  v-model.number="patientSessionForm.paymentAmount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="0"
+                  class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-mono font-bold text-sm text-slate-800 dark:text-white"
+                />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">TL</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Ödeme Yöntemi</label>
+              <select
+                v-model="patientSessionForm.paymentMethod"
+                class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-800 dark:text-white"
+              >
+                <option value="cash">Nakit</option>
+                <option value="card">Kredi Kartı / POS</option>
+                <option value="transfer">Havale / EFT</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="patientSessionForm.paymentAmount > 0" class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/50 flex items-start gap-1.5">
+            <Icon name="heroicons:check-circle" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+            <span>
+              <b>{{ formatCurrency(patientSessionForm.paymentAmount) }}</b> tahsilat genel kasaya girer, seçilen hekime <b>%{{ getDoctorRate(patientSessionForm.doctorId) }} ({{ formatCurrency(Math.round(patientSessionForm.paymentAmount * getDoctorRate(patientSessionForm.doctorId) / 100)) }})</b> hak ediş tahakkuk eder ve hastanın tedavi borcundan düşülür.
+            </span>
           </div>
         </div>
 
@@ -3053,6 +3106,9 @@ const patientSessionForm = ref({
   archwireUpper: '',
   archwireLower: '',
   elastics: '',
+  paymentAmount: 0,
+  paymentMethod: 'cash',
+  paymentNotes: '',
   nextAppointmentDate: '',
   nextAppointmentNotes: ''
 });
@@ -3919,11 +3975,14 @@ const openPatientSessionModal = () => {
     sessionNumber: pastSessions.length + 1,
     date: todayStr(),
     time: '11:00',
-    doctorId: patientData.value?.orthodonticPlan?.doctorId?._id || getDefaultDoctorId(),
+    doctorId: patientData.value?.orthodonticPlan?.doctorId?._id || patientData.value?.orthodonticPlan?.doctorId || getDefaultDoctorId(),
     sessionNotes: '',
     archwireUpper: '',
     archwireLower: '',
     elastics: '',
+    paymentAmount: 0,
+    paymentMethod: 'cash',
+    paymentNotes: '',
     nextAppointmentDate: '',
     nextAppointmentNotes: ''
   };
@@ -3941,6 +4000,9 @@ const openEditPatientSessionModal = (s) => {
     archwireUpper: s.archwireUpper || '',
     archwireLower: s.archwireLower || '',
     elastics: s.elastics || '',
+    paymentAmount: s.paymentAmount || 0,
+    paymentMethod: s.paymentMethod || 'cash',
+    paymentNotes: s.paymentNotes || '',
     nextAppointmentDate: s.nextAppointmentDate || '',
     nextAppointmentNotes: s.nextAppointmentNotes || ''
   };
@@ -3974,9 +4036,15 @@ const savePatientSession = async () => {
           ...patientSessionForm.value
         }
       });
+      const paymentMsg = patientSessionForm.value.paymentAmount > 0 
+        ? ` ve ${formatCurrency(patientSessionForm.value.paymentAmount)} tahsilat kasaya/hekime işlendi.` 
+        : '';
       window.dispatchEvent(new CustomEvent('toast-message', {
-        detail: { message: 'Seans notu başarıyla arşive eklendi.', type: 'success' }
+        detail: { message: `Seans notu başarıyla arşive eklendi${paymentMsg}`, type: 'success' }
       }));
+      if (patientSessionForm.value.paymentAmount > 0) {
+        window.dispatchEvent(new CustomEvent('refresh-stats'));
+      }
     }
 
     isPatientSessionModalOpen.value = false;

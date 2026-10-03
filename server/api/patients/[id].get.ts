@@ -4,6 +4,8 @@ import { Payment } from '../../models/Payment';
 import { Appointment } from '../../models/Appointment';
 import { LabWork } from '../../models/LabWork';
 import { ConsentForm } from '../../models/ConsentForm';
+import { OrthodonticPlan } from '../../models/OrthodonticPlan';
+import { OrthodonticSession } from '../../models/OrthodonticSession';
 
 // Belirli bir hastanın tüm detaylarını, randevularını, tedavilerini, ödemelerini, laboratuvar ve onam kayıtlarını getirir
 export default defineEventHandler(async (event) => {
@@ -24,12 +26,24 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Hastayla ilişkili diğer verileri sorgula
-    const treatments = await Treatment.find({ patientId: id }).sort({ date: -1, createdAt: -1 });
-    const payments = await Payment.find({ patientId: id }).sort({ date: -1, createdAt: -1 });
-    const appointments = await Appointment.find({ patientId: id }).sort({ date: -1, time: -1 });
-    const labWorks = await LabWork.find({ patientId: id }).sort({ expectedDate: 1, createdAt: -1 });
-    const consentForms = await ConsentForm.find({ patientId: id }).sort({ signedAt: -1, createdAt: -1 });
+    // Hastayla ilişkili diğer verileri paralel sorgula
+    const [
+      treatments,
+      payments,
+      appointments,
+      labWorks,
+      consentForms,
+      orthodonticPlan,
+      orthodonticSessions
+    ] = await Promise.all([
+      Treatment.find({ patientId: id }).populate('doctorId', 'name username title rate').sort({ date: -1, createdAt: -1 }),
+      Payment.find({ patientId: id }).populate('doctorId', 'name username title rate').sort({ date: -1, createdAt: -1 }),
+      Appointment.find({ patientId: id }).populate('doctorId', 'name username title').sort({ date: -1, time: -1 }),
+      LabWork.find({ patientId: id }).sort({ expectedDate: 1, createdAt: -1 }),
+      ConsentForm.find({ patientId: id }).sort({ signedAt: -1, createdAt: -1 }),
+      OrthodonticPlan.findOne({ patientId: id, status: { $ne: 'cancelled' } }).populate('doctorId', 'name username title rate').sort({ createdAt: -1 }),
+      OrthodonticSession.find({ patientId: id }).populate('doctorId', 'name username title rate').sort({ sessionNumber: -1, date: -1 })
+    ]);
 
     // Finansal toplamları hesapla
     const totalFee = treatments.reduce((sum, t) => sum + (t.fee || 0), 0);
@@ -43,6 +57,8 @@ export default defineEventHandler(async (event) => {
       appointments,
       labWorks,
       consentForms,
+      orthodonticPlan,
+      orthodonticSessions,
       financials: {
         totalFee,
         totalPaid,

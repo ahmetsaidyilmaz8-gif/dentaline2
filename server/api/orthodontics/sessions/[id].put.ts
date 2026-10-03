@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const updateData: any = {};
+    if (body.doctorId !== undefined) updateData.doctorId = body.doctorId;
+    if (body.sessionNumber !== undefined) updateData.sessionNumber = Number(body.sessionNumber);
     if (body.sessionNotes !== undefined) updateData.sessionNotes = body.sessionNotes.trim();
     if (body.archwireUpper !== undefined) updateData.archwireUpper = body.archwireUpper.trim();
     if (body.archwireLower !== undefined) updateData.archwireLower = body.archwireLower.trim();
