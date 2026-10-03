@@ -60,8 +60,9 @@
           v-for="p in filteredPatients"
           :key="p._id"
           type="button"
+          @mousedown.prevent="selectPatient(p)"
           @click="selectPatient(p)"
-          class="w-full text-left px-4 py-2 text-sm flex flex-col transition-colors border-0 outline-none"
+          class="w-full text-left px-4 py-2 text-sm flex flex-col transition-colors border-0 outline-none cursor-pointer"
           :class="[
             p._id === modelValue
               ? 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400 font-bold'
@@ -106,10 +107,28 @@ const { formatPhone } = useUtils();
 const isOpen = ref(false);
 const searchQuery = ref('');
 const dropdownRef = ref(null);
+const internalPatients = ref([]);
+
+const effectivePatients = computed(() => {
+  if (Array.isArray(props.patients) && props.patients.length > 0) {
+    return props.patients;
+  }
+  return internalPatients.value;
+});
+
+const loadFallbackPatients = async () => {
+  if (effectivePatients.value.length > 0) return;
+  try {
+    const res = await $fetch('/api/patients?all=true&limit=2000');
+    internalPatients.value = Array.isArray(res) ? res : (res?.patients || []);
+  } catch (err) {
+    console.warn('PatientSearchSelect fallback error:', err);
+  }
+};
 
 // Find selected patient object
 const selectedPatient = computed(() => {
-  return props.patients.find(p => p._id === props.modelValue);
+  return effectivePatients.value.find(p => p._id === props.modelValue);
 });
 
 // Update the search query display when selected patient changes
@@ -139,11 +158,17 @@ const clearSelection = () => {
 // Toggle dropdown
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
+  if (isOpen.value && effectivePatients.value.length === 0) {
+    loadFallbackPatients();
+  }
 };
 
 // Handle Input Focus
 const onFocus = (e) => {
   isOpen.value = true;
+  if (effectivePatients.value.length === 0) {
+    loadFallbackPatients();
+  }
   e.target.select();
 };
 
@@ -186,11 +211,11 @@ const filteredPatients = computed(() => {
   const selectedName = selectedPatient.value ? `${selectedPatient.value.firstName} ${selectedPatient.value.lastName}` : '';
   
   if (!query || query === selectedName) {
-    return props.patients.slice(0, 50);
+    return effectivePatients.value.slice(0, 50);
   }
   
   const searchLower = lowerTurkish(query);
-  return props.patients.filter((p) => {
+  return effectivePatients.value.filter((p) => {
     const fullName = `${p.firstName} ${p.lastName}`;
     return lowerTurkish(fullName).includes(searchLower) || (p.phone && lowerTurkish(p.phone).includes(searchLower));
   }).slice(0, 50);
@@ -206,6 +231,9 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  if (!props.patients || props.patients.length === 0) {
+    loadFallbackPatients();
+  }
 });
 
 onBeforeUnmount(() => {

@@ -1213,13 +1213,14 @@ const loadAllData = async () => {
       $fetch('/api/orthodontics/plans'),
       $fetch('/api/orthodontics/sessions'),
       $fetch('/api/orthodontics/stats'),
-      $fetch('/api/patients'),
+      $fetch('/api/patients?all=true&limit=2000'),
       $fetch('/api/doctors')
     ]);
 
     plans.value = plansRes || [];
     sessions.value = sessionsRes || [];
     stats.value = statsRes || {};
+    allPatients.value = Array.isArray(patientsRes) ? patientsRes : (patientsRes?.patients || []);
     const docs = (doctorsRes || []).filter(d => !d.name?.toLowerCase().includes('klinik') && d.username !== 'klinik');
     docs.sort((a, b) => {
       const aIsSelman = a.name?.toLowerCase().includes('selman') || a.username === 'dtselo' || a.name?.toLowerCase().includes('muhammed');
@@ -1239,6 +1240,16 @@ const loadAllData = async () => {
     console.error('Ortodonti verileri yüklenemedi:', error);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const ensurePatientsLoaded = async () => {
+  if (allPatients.value.length > 0) return;
+  try {
+    const res = await $fetch('/api/patients?all=true&limit=2000');
+    allPatients.value = Array.isArray(res) ? res : (res?.patients || []);
+  } catch (err) {
+    console.warn('Hastalar yüklenemedi:', err);
   }
 };
 
@@ -1331,7 +1342,8 @@ const filteredInstallments = computed(() => {
 });
 
 // Modal Açma Fonksiyonları
-const openNewPlanModal = () => {
+const openNewPlanModal = async () => {
+  await ensurePatientsLoaded();
   planForm.value = defaultPlanForm();
   if (doctorsList.value.length > 0) planForm.value.doctorId = doctorsList.value[0]._id;
   isNewPlanModalOpen.value = true;
@@ -1357,7 +1369,8 @@ const openCancelOrDeletePlanModal = (plan) => {
   isCancelOrDeletePlanModalOpen.value = true;
 };
 
-const openSessionModal = (plan = null) => {
+const openSessionModal = async (plan = null) => {
+  await ensurePatientsLoaded();
   editingSessionId.value = null;
   sessionForm.value = defaultSessionForm();
   isSelectingPatientForSession.value = !plan;
