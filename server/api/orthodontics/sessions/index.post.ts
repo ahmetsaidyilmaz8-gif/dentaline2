@@ -122,7 +122,11 @@ export default defineEventHandler(async (event) => {
           }
         }
 
-        await plan.save();
+        if (!plan.durationMonths || plan.durationMonths < 1) {
+          plan.durationMonths = (plan.installments && plan.installments.length > 0) ? plan.installments.length : 12;
+        }
+
+        await plan.save({ validateModifiedOnly: true });
       }
     }
 

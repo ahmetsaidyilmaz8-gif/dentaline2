@@ -77,8 +77,8 @@ const orthodonticPlanSchema = new mongoose.Schema({
   },
   durationMonths: {
     type: Number,
-    required: [true, 'Tahmini tedavi süresi (ay) zorunludur.'],
-    min: [1, 'Süre en az 1 ay olmalıdır.']
+    default: 12,
+    min: [0, 'Süre negatif olamaz.']
   },
   startDate: {
     type: String, // YYYY-MM-DD
