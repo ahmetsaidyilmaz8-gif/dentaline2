@@ -239,8 +239,8 @@
               </div>
             </div>
 
-            <!-- Kart Eylem Butonları: İptal/Sil, Detay -->
-            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-2">
+            <!-- Kart Eylem Butonları: İptal/Sil -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-end">
               <button
                 @click="openCancelOrDeletePlanModal(plan)"
                 class="py-2 px-3 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
@@ -249,15 +249,6 @@
                 <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
                 <span>Tedaviyi Sil / İptal</span>
               </button>
-
-              <NuxtLink
-                :to="`/patients/${plan.patientId?._id}`"
-                class="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                title="Hasta Detayına Git"
-              >
-                <span>Hasta Profiline Git</span>
-                <Icon name="heroicons:arrow-right" class="w-3.5 h-3.5" />
-              </NuxtLink>
             </div>
           </div>
         </div>
@@ -300,21 +291,13 @@
                 </option>
               </select>
             </div>
-
-            <button
-              @click="openSessionModal()"
-              class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
-            >
-              <Icon name="heroicons:plus" class="w-4 h-4 stroke-[2.5]" />
-              <span>Yeni Seans Kaydet</span>
-            </button>
           </div>
         </div>
 
         <div v-if="patientSessionsGrouped.length === 0" class="py-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <Icon name="heroicons:document-text" class="w-8 h-8 mx-auto mb-2 opacity-60" />
           <div class="font-semibold text-slate-600 dark:text-slate-300">Henüz kayıtlı seans veya hasta bulunamadı.</div>
-          <p class="text-xs text-slate-400 mt-1">Yukarıdaki "+ Yeni Seans Kaydet" butonuna tıklayarak ilk seansı girebilirsiniz.</p>
+          <p class="text-xs text-slate-400 mt-1">Aşağıdaki hasta kartlarının sağındaki "+ Seans Ekle" butonuna tıklayarak seans girebilirsiniz.</p>
         </div>
 
         <!-- HASTALARA GÖRE AYRI AYRI BLOKLAR -->
@@ -363,7 +346,7 @@
                   class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <Icon name="heroicons:plus" class="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>+ Seans Notu Ekle</span>
+                  <span>Seans Ekle</span>
                 </button>
               </div>
             </div>
@@ -371,7 +354,7 @@
             <!-- Hasta Seans Listesi -->
             <div class="p-4">
               <div v-if="group.sessions.length === 0" class="py-6 text-center text-xs text-slate-400 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-                Bu hastaya ait henüz seans notu girilmemiş. Yukarıdaki <b>"+ Seans Notu Ekle"</b> butonu ile ilk seansı kaydedebilirsiniz.
+                Bu hastaya ait henüz seans notu girilmemiş. Yukarıdaki <b>"+ Seans Ekle"</b> butonu ile ilk seansı kaydedebilirsiniz.
               </div>
               <div v-else class="space-y-2.5">
                 <div
@@ -904,10 +887,10 @@
       </template>
     </AppModal>
 
-    <!-- MODAL 2: SEANS NOTU EKLE / DÜZENLE -->
+    <!-- MODAL 2: SEANS EKLE / DÜZENLE -->
     <AppModal
       :isOpen="isSessionModalOpen"
-      :title="editingSessionId ? '✏️ Seans Notunu Düzenle' : '🦷 Koltuk Başı Ortodonti Seans Notu Ekle'"
+      :title="editingSessionId ? '✏️ Seansı Düzenle' : '🦷 Koltuk Başı Ortodonti Seansı Ekle'"
       width="md"
       @close="isSessionModalOpen = false"
     >
@@ -1127,7 +1110,7 @@
           :disabled="isSubmitting"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
         >
-          {{ isSubmitting ? 'Kaydediliyor...' : 'Seans Notunu Kaydet' }}
+          {{ isSubmitting ? 'Kaydediliyor...' : (editingSessionId ? 'Seansı Güncelle' : 'Seansı Kaydet') }}
         </button>
       </template>
     </AppModal>
