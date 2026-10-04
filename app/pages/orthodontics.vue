@@ -239,32 +239,24 @@
               </div>
             </div>
 
-            <!-- Kart Eylem Butonları: Anlaşma Düzenle, İptal/Sil, Detay -->
-            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center gap-1.5">
-              <button
-                @click="openEditPlanModal(plan)"
-                class="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95"
-                title="Tedavi Anlaşmasını & Fiyatı Düzenle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-4 h-4" />
-                <span>Anlaşmayı Düzenle</span>
-              </button>
-
+            <!-- Kart Eylem Butonları: İptal/Sil, Detay -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-2">
               <button
                 @click="openCancelOrDeletePlanModal(plan)"
-                class="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center active:scale-95"
+                class="py-2 px-3 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 title="Tedaviyi İptal Et veya Sil"
               >
-                <Icon name="heroicons:trash" class="w-4 h-4" />
+                <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
+                <span>Tedaviyi Sil / İptal</span>
               </button>
 
               <NuxtLink
                 :to="`/patients/${plan.patientId?._id}`"
-                class="py-2 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                class="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 title="Hasta Detayına Git"
               >
-                <span>Detay</span>
-                <Icon name="heroicons:arrow-right" class="w-3 h-3" />
+                <span>Hasta Profiline Git</span>
+                <Icon name="heroicons:arrow-right" class="w-3.5 h-3.5" />
               </NuxtLink>
             </div>
           </div>
@@ -623,37 +615,9 @@
               </div>
             </div>
 
-            <!-- Taksit Tablosu veya Taksitsiz Bilgi Paneli -->
-            <div class="p-4">
-              <!-- Taksitsiz Modelse -->
-              <div v-if="item.plan.summary?.isPerSession || !item.allInstallments?.length" class="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon name="heroicons:banknotes" class="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div class="text-xs font-bold text-emerald-900 dark:text-emerald-300">
-                      Taksitsiz Tedavi (Seans Başı Tahsilat Modeli)
-                    </div>
-                    <p class="text-xs text-emerald-700/90 dark:text-emerald-400 mt-0.5 leading-relaxed">
-                      Bu hasta için sabit aylık takvim bulunmamaktadır. Koltuk başında seans notu girilirken alınan tahsilatlar doğrudan kalan <b>{{ formatCurrency(item.plan.summary?.remainingBalance ?? item.plan.totalAmount) }}</b> borçtan düşülmektedir.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  v-if="(item.plan.summary?.remainingBalance ?? item.plan.totalAmount) > 0"
-                  type="button"
-                  @click="openDirectPaymentModal(item.plan)"
-                  class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                  title="Tedavi Borcu İçin Tahsilat Al"
-                >
-                  <Icon name="heroicons:banknotes" class="w-4 h-4" />
-                  <span>+ Tahsilat Al</span>
-                </button>
-              </div>
-
-              <!-- Taksitli Modelse: Hastaya Özel Taksit Tablosu -->
-              <div v-else class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+            <!-- Taksit Tablosu (Sadece Taksitli Modeller İçin) -->
+            <div v-if="!item.plan.summary?.isPerSession && item.allInstallments?.length" class="p-4">
+              <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                 <table class="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr class="bg-slate-50 dark:bg-slate-900/60 text-slate-400 font-bold uppercase text-[10px]">

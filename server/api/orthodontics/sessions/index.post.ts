@@ -11,6 +11,22 @@ export default defineEventHandler(async (event) => {
     const currentDoctor = await requireDoctor(event);
     const body = await readBody(event);
 
+    const normalizeDateStr = (raw: string) => {
+      if (!raw) return '';
+      const trimmed = String(raw).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+        return trimmed.substring(0, 10);
+      }
+      if (/^\d{2}\.\d{2}\.\d{4}/.test(trimmed)) {
+        const parts = trimmed.split('.');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      return trimmed;
+    };
+
+    if (body.date) body.date = normalizeDateStr(body.date);
+    if (body.nextAppointmentDate) body.nextAppointmentDate = normalizeDateStr(body.nextAppointmentDate);
+
     if (!body.patientId || !body.date || !body.sessionNotes) {
       throw createError({
         statusCode: 400,
@@ -152,17 +168,44 @@ export default defineEventHandler(async (event) => {
 
     await session.save();
 
+    const patientName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Ortodonti Hastası';
+    const patientPhone = patient.phone || '';
+
+    // 1. Seansın kendi tarihi için genel randevu kaydı oluştur
+    if (body.date) {
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isFutureOrToday = body.date >= todayStr;
+        const sessionAppt = new Appointment({
+          patientId: body.patientId,
+          patientName,
+          patientPhone,
+          date: body.date,
+          time: body.time || '11:00',
+          procedure: `Ortodonti ${sessionNumber}. Seans`,
+          duration: 30,
+          notes: body.sessionNotes ? `Seans Notu: ${body.sessionNotes.trim()}` : 'Ortodontik seans',
+          status: isFutureOrToday ? 'pending' : 'completed',
+          doctorId
+        });
+        await sessionAppt.save();
+      } catch (apptErr) {
+        console.warn('Seans randevusu kaydedilirken uyarı:', apptErr);
+      }
+    }
+
+    // 2. Bir sonraki seans randevusu seçilmişse oluştur
     if (body.nextAppointmentDate) {
       try {
         const nextAppt = new Appointment({
           patientId: body.patientId,
-          patientName: `${patient.firstName || ''} ${patient.lastName || ''}`.trim(),
-          patientPhone: patient.phone || '',
+          patientName,
+          patientPhone,
           date: body.nextAppointmentDate,
           time: body.nextAppointmentTime || '11:00',
           procedure: `Ortodonti ${sessionNumber + 1}. Seans Kontrolü`,
           duration: 30,
-          notes: body.nextAppointmentNotes ? `Ortodonti Notu: ${body.nextAppointmentNotes}` : 'Ortodontik seans kontrolü',
+          notes: body.nextAppointmentNotes ? `Ortodonti Notu: ${body.nextAppointmentNotes.trim()}` : 'Ortodontik seans kontrolü',
           status: 'pending',
           doctorId
         });
