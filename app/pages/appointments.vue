@@ -204,7 +204,7 @@
           </div>
 
           <!-- Yükleniyor Göstergesi -->
-          <div v-if="isLoading" class="p-16 text-center text-slate-400">
+          <div v-if="isLoading && appointments.length === 0" class="p-16 text-center text-slate-400">
             <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin text-teal-600 inline-block mb-3" />
             <div class="text-sm font-medium">Haftalık randevular yükleniyor...</div>
           </div>
@@ -316,7 +316,7 @@
       </div>
 
       <!-- Yükleniyor Göstergesi -->
-      <div v-if="isLoading" class="p-16 text-center text-slate-400">
+      <div v-if="isLoading && appointments.length === 0" class="p-16 text-center text-slate-400">
         <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin text-teal-600 inline-block mb-3" />
         <div class="text-sm font-medium">Aylık randevular yükleniyor...</div>
       </div>
@@ -427,7 +427,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <tr v-if="isLoading">
+            <tr v-if="isLoading && appointments.length === 0">
               <td colspan="8" class="px-6 py-12 text-center text-slate-400 dark:text-slate-500 font-medium text-sm">
                 <Icon name="heroicons:arrow-path" class="w-6 h-6 animate-spin text-teal-600 inline-block mb-2" />
                 <div>Randevular yükleniyor...</div>
@@ -1159,9 +1159,11 @@ const loadDoctors = async () => {
 };
 
 // Randevuları API'den çek
-const loadAppointments = async () => {
+const loadAppointments = async (silent = false) => {
   try {
-    isLoading.value = true;
+    if (!silent && appointments.value.length === 0) {
+      isLoading.value = true;
+    }
     const docFilter = selectedDoctorFilter.value;
 
     const params = {
@@ -1497,6 +1499,13 @@ const saveAppointment = async () => {
 
 // Randevu Durum Değiştir
 const updateStatus = async (apptId, status) => {
+  // Anında ekranda güncelle (Optimistic UI - sayfa yenilenmez / titreşmez)
+  const target = appointments.value.find(a => a._id === apptId);
+  const oldStatus = target ? target.status : null;
+  if (target) {
+    target.status = status;
+  }
+
   try {
     await $fetch(`/api/appointments/${apptId}`, {
       method: 'PUT',
@@ -1507,9 +1516,12 @@ const updateStatus = async (apptId, status) => {
       detail: { message: 'Randevu durumu güncellendi.', type: 'success' }
     }));
 
-    await loadAppointments();
+    await loadAppointments(true); // Sessiz arka plan senkronizasyonu
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
+    if (target && oldStatus) {
+      target.status = oldStatus;
+    }
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
       detail: { message: 'Durum güncellenirken bir hata oluştu.', type: 'error' }
@@ -1525,6 +1537,10 @@ const confirmDelete = (apptId) => {
 };
 
 const deleteAppointment = async (apptId) => {
+  const previousList = [...appointments.value];
+  // Anında tablodan kaldır (Optimistic UI)
+  appointments.value = appointments.value.filter(a => a._id !== apptId);
+
   try {
     await $fetch(`/api/appointments/${apptId}`, {
       method: 'DELETE'
@@ -1534,9 +1550,10 @@ const deleteAppointment = async (apptId) => {
       detail: { message: 'Randevu kaydı silindi.', type: 'success' }
     }));
 
-    await loadAppointments();
+    await loadAppointments(true); // Sessiz arka plan senkronizasyonu
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
+    appointments.value = previousList;
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
       detail: { message: 'Randevu silinirken hata oluştu.', type: 'error' }

@@ -17,12 +17,14 @@
     <!-- Geri Butonu & Üst Başlık (Panel içinde) -->
     <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm flex items-center justify-between gap-3 sm:gap-4 w-full max-w-full min-w-0">
       <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-        <NuxtLink
-          to="/patients"
-          class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center shrink-0"
+        <button
+          type="button"
+          @click="goBack"
+          class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center shrink-0 cursor-pointer active:scale-95"
+          title="Geri Dön"
         >
           <Icon name="heroicons:arrow-left" class="w-4 h-4 text-slate-600 dark:text-slate-300" />
-        </NuxtLink>
+        </button>
         <div class="min-w-0">
           <span class="text-xs sm:text-sm text-slate-400 dark:text-slate-500 font-semibold block uppercase tracking-wider">Hasta Detay Profili</span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight truncate">
@@ -750,7 +752,7 @@
                           <Icon name="heroicons:pencil-square" class="w-4 h-4" />
                         </button>
                         <button
-                          v-if="appt.status === 'pending' || appt.status === 'postponed'"
+                          v-if="appt.status === 'pending'"
                           @click="updateAppointmentStatus(appt._id, 'completed')"
                           class="p-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded border border-emerald-200/50 dark:border-emerald-800/50 transition-colors"
                           title="Tamamla"
@@ -766,7 +768,7 @@
                           <Icon name="heroicons:clock" class="w-4 h-4" />
                         </button>
                         <button
-                          v-if="appt.status === 'pending' || appt.status === 'postponed'"
+                          v-if="appt.status === 'pending'"
                           @click="updateAppointmentStatus(appt._id, 'cancelled')"
                           class="p-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded border border-rose-200/50 dark:border-rose-800/50 transition-colors"
                           title="İptal Et"
@@ -2833,12 +2835,21 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useUtils } from '~/composables/useUtils';
 import { downloadConsentPdf } from '~/utils/consentPdf';
 
 const route = useRoute();
+const router = useRouter();
 const patientId = route.params.id;
+
+const goBack = () => {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back();
+  } else {
+    router.push('/patients');
+  }
+};
 
 // WhatsApp ve Hızlı Arama Durumları
 const whatsappDropdownRef = ref(null);
@@ -3730,6 +3741,12 @@ const addAppointment = async () => {
 
 // Randevu Durum Güncelle
 const updateAppointmentStatus = async (apptId, status) => {
+  const target = patientData.value?.appointments?.find(a => a._id === apptId);
+  const oldStatus = target ? target.status : null;
+  if (target) {
+    target.status = status;
+  }
+
   try {
     await $fetch(`/api/appointments/${apptId}`, {
       method: 'PUT',
@@ -3743,6 +3760,9 @@ const updateAppointmentStatus = async (apptId, status) => {
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
+    if (target && oldStatus) {
+      target.status = oldStatus;
+    }
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
       detail: { message: 'Randevu güncellenirken hata oluştu.', type: 'error' }
@@ -3753,6 +3773,11 @@ const updateAppointmentStatus = async (apptId, status) => {
 // Randevu Sil
 const deleteAppointment = async (apptId) => {
   if (!window.confirm('Bu randevuyu silmek istediğinize emin misiniz?')) return;
+  const prevList = patientData.value?.appointments ? [...patientData.value.appointments] : [];
+  if (patientData.value?.appointments) {
+    patientData.value.appointments = patientData.value.appointments.filter(a => a._id !== apptId);
+  }
+
   try {
     await $fetch(`/api/appointments/${apptId}`, {
       method: 'DELETE'
@@ -3765,6 +3790,9 @@ const deleteAppointment = async (apptId) => {
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
   } catch (error) {
+    if (patientData.value) {
+      patientData.value.appointments = prevList;
+    }
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
       detail: { message: 'Randevu silinirken hata oluştu.', type: 'error' }
