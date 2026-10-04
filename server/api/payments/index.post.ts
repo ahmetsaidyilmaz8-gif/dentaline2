@@ -64,17 +64,37 @@ export default defineEventHandler(async (event) => {
     const payment = new Payment(paymentData);
     await payment.save();
 
-    if (body.orthodonticPlanId && body.installmentNo) {
+    if (body.orthodonticPlanId) {
       const plan = await OrthodonticPlan.findById(body.orthodonticPlanId);
-      if (plan && plan.installments) {
-        const inst = plan.installments.find((i: any) => i.installmentNo === Number(body.installmentNo));
-        if (inst) {
-          inst.status = 'paid';
-          inst.paidAmount = Number(body.amount);
-          inst.paymentDate = body.date;
-          inst.paymentId = payment._id;
-          await plan.save();
+      if (plan && plan.installments && plan.installments.length > 0) {
+        if (body.installmentNo) {
+          const inst = plan.installments.find((i: any) => i.installmentNo === Number(body.installmentNo));
+          if (inst) {
+            inst.status = 'paid';
+            inst.paidAmount = Number(body.amount);
+            inst.paymentDate = body.date;
+            inst.paymentId = payment._id;
+          }
+        } else {
+          // Doğrudan tahsilat yapıldığında varsa bekleyen taksitleri sırayla kapat
+          let unallocated = Number(body.amount);
+          for (const inst of plan.installments) {
+            if (inst.status !== 'paid' && unallocated > 0) {
+              const needed = (inst.amount || 0) - (inst.paidAmount || 0);
+              if (unallocated >= needed) {
+                inst.status = 'paid';
+                inst.paidAmount = inst.amount;
+                inst.paymentDate = body.date;
+                inst.paymentId = payment._id;
+                unallocated -= needed;
+              } else {
+                inst.paidAmount = (inst.paidAmount || 0) + unallocated;
+                unallocated = 0;
+              }
+            }
+          }
         }
+        await plan.save();
       }
     }
 

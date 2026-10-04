@@ -142,6 +142,7 @@ export default defineEventHandler(async (event) => {
       archwireLower: body.archwireLower ? body.archwireLower.trim() : '',
       elastics: body.elastics ? body.elastics.trim() : '',
       nextAppointmentDate: body.nextAppointmentDate || '',
+      nextAppointmentTime: body.nextAppointmentTime || '11:00',
       nextAppointmentNotes: body.nextAppointmentNotes ? body.nextAppointmentNotes.trim() : '',
       status: body.status || 'completed',
       paymentAmount: paymentAmount > 0 ? paymentAmount : 0,
@@ -155,6 +156,8 @@ export default defineEventHandler(async (event) => {
       try {
         const nextAppt = new Appointment({
           patientId: body.patientId,
+          patientName: `${patient.firstName || ''} ${patient.lastName || ''}`.trim(),
+          patientPhone: patient.phone || '',
           date: body.nextAppointmentDate,
           time: body.nextAppointmentTime || '11:00',
           procedure: `Ortodonti ${sessionNumber + 1}. Seans Kontrolü`,

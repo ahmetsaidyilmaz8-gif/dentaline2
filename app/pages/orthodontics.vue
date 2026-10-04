@@ -239,23 +239,15 @@
               </div>
             </div>
 
-            <!-- Kart Eylem Butonları: Seans Notu Ekle, Düzenle, İptal/Sil, Detay -->
+            <!-- Kart Eylem Butonları: Anlaşma Düzenle, İptal/Sil, Detay -->
             <div class="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center gap-1.5">
               <button
-                @click="openSessionModal(plan)"
-                class="flex-1 py-2 px-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
-                title="Yeni Seans Notu Ekle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                <span>Seans Notu</span>
-              </button>
-
-              <button
                 @click="openEditPlanModal(plan)"
-                class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center active:scale-95"
+                class="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95"
                 title="Tedavi Anlaşmasını & Fiyatı Düzenle"
               >
-                <Icon name="heroicons:pencil" class="w-4 h-4" />
+                <Icon name="heroicons:pencil-square" class="w-4 h-4" />
+                <span>Anlaşmayı Düzenle</span>
               </button>
 
               <button
@@ -292,6 +284,17 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
+            <!-- Hasta Arama Metin Kutusu -->
+            <div class="relative flex items-center">
+              <Icon name="heroicons:magnifying-glass" class="w-4 h-4 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <input
+                v-model="sessionSearchQuery"
+                type="text"
+                placeholder="Hasta adı veya tel ara..."
+                class="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 w-44 sm:w-56"
+              />
+            </div>
+
             <!-- Hasta Seçici Dropdown -->
             <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs">
               <Icon name="heroicons:user" class="w-4 h-4 text-indigo-500 shrink-0" />
@@ -306,33 +309,9 @@
               </select>
             </div>
 
-            <!-- Görünüm Seçici (Ayrı Ayrı / Genel Akış) -->
-            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <button
-                type="button"
-                @click="sessionViewMode = 'by_patient'"
-                :class="sessionViewMode === 'by_patient' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800 font-semibold'"
-                class="px-2.5 py-1 text-xs rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                title="Hastaları tek tek ayrı bloklar halinde gösterir"
-              >
-                <Icon name="heroicons:squares-2x2" class="w-3.5 h-3.5" />
-                <span>Hastaya Göre Ayrı</span>
-              </button>
-              <button
-                type="button"
-                @click="sessionViewMode = 'timeline'"
-                :class="sessionViewMode === 'timeline' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800 font-semibold'"
-                class="px-2.5 py-1 text-xs rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                title="Tüm seansları tek bir kronolojik listede gösterir"
-              >
-                <Icon name="heroicons:clock" class="w-3.5 h-3.5" />
-                <span>Genel Akış</span>
-              </button>
-            </div>
-
             <button
               @click="openSessionModal()"
-              class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+              class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
             >
               <Icon name="heroicons:plus" class="w-4 h-4 stroke-[2.5]" />
               <span>Yeni Seans Kaydet</span>
@@ -346,8 +325,8 @@
           <p class="text-xs text-slate-400 mt-1">Yukarıdaki "+ Yeni Seans Kaydet" butonuna tıklayarak ilk seansı girebilirsiniz.</p>
         </div>
 
-        <!-- 1. GÖRÜNÜM: HASTALARA GÖRE AYRI AYRI BLOKLAR -->
-        <div v-else-if="sessionViewMode === 'by_patient'" class="space-y-4">
+        <!-- HASTALARA GÖRE AYRI AYRI BLOKLAR -->
+        <div v-else class="space-y-4">
           <div
             v-for="group in patientSessionsGrouped"
             :key="group.patient?._id || group.plan?._id"
@@ -394,14 +373,6 @@
                   <Icon name="heroicons:plus" class="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>+ Seans Notu Ekle</span>
                 </button>
-                <NuxtLink
-                  :to="`/patients/${group.patient?._id}`"
-                  class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
-                  title="Hasta Kartına Git"
-                >
-                  <span class="hidden sm:inline">Hasta Kartı</span>
-                  <Icon name="heroicons:arrow-top-right-on-square" class="w-4 h-4" />
-                </NuxtLink>
               </div>
             </div>
 
@@ -478,76 +449,6 @@
             </div>
           </div>
         </div>
-
-        <!-- 2. GÖRÜNÜM: GENEL ZAMAN TÜNELİ AKIŞI -->
-        <div v-else class="space-y-3">
-          <div
-            v-for="s in filteredSortedSessions"
-            :key="s._id"
-            class="p-4 rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div class="flex items-start gap-3.5 min-w-0 flex-1">
-              <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white font-black flex flex-col items-center justify-center shrink-0 shadow-xs">
-                <span class="text-[10px] uppercase font-semibold leading-none">Seans</span>
-                <span class="text-lg leading-tight">{{ s.sessionNumber }}</span>
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <NuxtLink :to="`/patients/${s.patientId?._id}`" class="font-bold text-sm text-slate-800 dark:text-white hover:text-indigo-600 hover:underline">
-                    {{ s.patientId?.firstName }} {{ s.patientId?.lastName }}
-                  </NuxtLink>
-                  <span class="text-xs font-mono text-slate-400">({{ formatDate(s.date) }} {{ s.time }})</span>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                    Hekim: {{ s.doctorId?.name || 'Diş Hekimi' }}
-                  </span>
-                  <span v-if="s.paymentAmount" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                    <Icon name="heroicons:banknotes" class="w-3 h-3 text-emerald-500" />
-                    <span>{{ formatCurrency(s.paymentAmount) }} Tahsil Edildi</span>
-                  </span>
-                </div>
-
-                <p class="mt-1 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium whitespace-pre-line leading-relaxed">
-                  {{ s.sessionNotes }}
-                </p>
-
-                <div v-if="s.archwireUpper || s.archwireLower || s.elastics" class="mt-2 flex flex-wrap items-center gap-2">
-                  <span v-if="s.archwireUpper" class="px-2 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                    Üst Tel: {{ s.archwireUpper }}
-                  </span>
-                  <span v-if="s.archwireLower" class="px-2 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                    Alt Tel: {{ s.archwireLower }}
-                  </span>
-                  <span v-if="s.elastics" class="px-2 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                    Lastik: {{ s.elastics }}
-                  </span>
-                </div>
-
-                <div v-if="s.nextAppointmentDate" class="mt-2 text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
-                  <Icon name="heroicons:calendar" class="w-3.5 h-3.5" />
-                  <span>Sonraki Seans: {{ formatDate(s.nextAppointmentDate) }} {{ s.nextAppointmentNotes ? `- ${s.nextAppointmentNotes}` : '' }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1 shrink-0 self-end md:self-center">
-              <button
-                @click="openEditSessionModal(s)"
-                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
-                title="Seans Notunu Düzenle"
-              >
-                <Icon name="heroicons:pencil-square" class="w-4 h-4" />
-              </button>
-              <button
-                @click="deleteSession(s._id)"
-                class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
-                title="Seansı Sil"
-              >
-                <Icon name="heroicons:trash" class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- SEKME 3: FİNANS & TAKSİT TAKİP PANELİ -->
@@ -563,6 +464,17 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
+            <!-- Hasta Arama Metin Kutusu -->
+            <div class="relative flex items-center">
+              <Icon name="heroicons:magnifying-glass" class="w-4 h-4 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <input
+                v-model="installmentSearchQuery"
+                type="text"
+                placeholder="Hasta adı veya tel ara..."
+                class="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 w-44 sm:w-56"
+              />
+            </div>
+
             <!-- Hasta Filtresi Dropdown -->
             <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs">
               <Icon name="heroicons:user" class="w-4 h-4 text-emerald-500 shrink-0" />
@@ -586,30 +498,6 @@
               <option value="paid">✓ Tahsil Edilenler</option>
               <option value="all">📋 Tüm Anlaşmalar & Taksitler</option>
             </select>
-
-            <!-- Görünüm Seçici (Hastaya Göre Ayrı / Toplu Tablo) -->
-            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <button
-                type="button"
-                @click="installmentViewMode = 'by_patient'"
-                :class="installmentViewMode === 'by_patient' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800 font-semibold'"
-                class="px-2.5 py-1 text-xs rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                title="Her hastanın borç ve taksitlerini ayrı panelde gösterir"
-              >
-                <Icon name="heroicons:squares-2x2" class="w-3.5 h-3.5" />
-                <span>Hastaya Göre Ayrı (Önerilen)</span>
-              </button>
-              <button
-                type="button"
-                @click="installmentViewMode = 'table'"
-                :class="installmentViewMode === 'table' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800 font-semibold'"
-                class="px-2.5 py-1 text-xs rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                title="Tüm hastaların taksitlerini tek bir tabloda listeler"
-              >
-                <Icon name="heroicons:table-cells" class="w-3.5 h-3.5" />
-                <span>Toplu Tablo</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -619,8 +507,8 @@
           <p class="text-xs text-slate-400 mt-1">Filtreyi "Tüm Anlaşmalar" olarak değiştirebilirsiniz.</p>
         </div>
 
-        <!-- 1. GÖRÜNÜM: HASTALARA GÖRE AYRI AYRI FİNANS & TAKSİT PANELLERİ -->
-        <div v-else-if="installmentViewMode === 'by_patient'" class="space-y-5">
+        <!-- HASTALARA GÖRE AYRI AYRI FİNANS & TAKSİT PANELLERİ -->
+        <div v-else class="space-y-5">
           <div
             v-for="item in installmentsByPatient"
             :key="item.plan._id"
@@ -665,32 +553,27 @@
                 </div>
               </div>
 
-              <!-- Finansal İlerleme ve Hızlı Butonlar -->
+              <!-- Finansal Hızlı Butonlar -->
               <div class="flex items-center gap-2 shrink-0">
                 <button
+                  v-if="(item.plan.summary?.remainingBalance ?? item.plan.totalAmount) > 0"
                   type="button"
-                  @click="openSessionModal(item.plan)"
-                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  @click="openDirectPaymentModal(item.plan)"
+                  class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  title="Hastadan Doğrudan Tahsilat Al"
                 >
-                  <Icon name="heroicons:banknotes" class="w-3.5 h-3.5" />
-                  <span>+ Seans & Tahsilat</span>
+                  <Icon name="heroicons:banknotes" class="w-4 h-4" />
+                  <span>+ Tahsilat Al</span>
                 </button>
                 <button
                   type="button"
                   @click="openEditPlanModal(item.plan)"
-                  class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                  title="Fiyatı & Anlaşmayı Düzenle"
+                  class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                  title="Fiyatı & Tedavi Anlaşmasını Düzenle"
                 >
-                  <Icon name="heroicons:pencil" class="w-4 h-4" />
+                  <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
+                  <span>Ücreti / Anlaşmayı Düzenle</span>
                 </button>
-                <NuxtLink
-                  :to="`/patients/${item.patient?._id}`"
-                  class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
-                  title="Hasta Kartına Git"
-                >
-                  <span class="hidden sm:inline">Hasta Kartı</span>
-                  <Icon name="heroicons:arrow-top-right-on-square" class="w-4 h-4" />
-                </NuxtLink>
               </div>
             </div>
 
@@ -758,12 +641,14 @@
                   </div>
                 </div>
                 <button
+                  v-if="(item.plan.summary?.remainingBalance ?? item.plan.totalAmount) > 0"
                   type="button"
-                  @click="openSessionModal(item.plan)"
+                  @click="openDirectPaymentModal(item.plan)"
                   class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                  title="Tedavi Borcu İçin Tahsilat Al"
                 >
-                  <Icon name="heroicons:plus" class="w-3.5 h-3.5" />
-                  <span>Seans Notu & Tahsilat Ekle</span>
+                  <Icon name="heroicons:banknotes" class="w-4 h-4" />
+                  <span>+ Tahsilat Al</span>
                 </button>
               </div>
 
@@ -834,82 +719,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- 2. GÖRÜNÜM: TOPLU TAKSİT TABLOSU (ESKİ LİSTE) -->
-        <div v-else class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
-          <table class="w-full text-left border-collapse text-xs sm:text-sm">
-            <thead>
-              <tr class="bg-slate-50 dark:bg-slate-950/30 border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase text-xs">
-                <th class="px-4 py-3">Hasta Adı</th>
-                <th class="px-4 py-3">Taksit No</th>
-                <th class="px-4 py-3">Vade Tarihi</th>
-                <th class="px-4 py-3">Sorumlu Hekim</th>
-                <th class="px-4 py-3 text-right">Tutar</th>
-                <th class="px-4 py-3 text-center">Durum</th>
-                <th class="px-4 py-3 text-center">İşlem</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-if="filteredInstallments.length === 0">
-                <td colspan="7" class="px-4 py-8 text-center text-slate-400">
-                  Seçilen filtreye uygun taksit bulunamadı.
-                </td>
-              </tr>
-              <tr v-for="item in filteredInstallments" :key="`${item.planId}-${item.installmentNo}`" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                <td class="px-4 py-3 font-bold text-slate-800 dark:text-white">
-                  <NuxtLink :to="`/patients/${item.patientId}`" class="hover:text-indigo-600 hover:underline">
-                    {{ item.patientName }}
-                  </NuxtLink>
-                </td>
-                <td class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">
-                  {{ item.installmentNo }}. Taksit
-                </td>
-                <td class="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">
-                  {{ formatDate(item.dueDate) }}
-                </td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
-                  {{ item.doctorName }}
-                </td>
-                <td class="px-4 py-3 text-right font-mono font-bold text-slate-800 dark:text-white">
-                  {{ formatCurrency(item.amount) }}
-                </td>
-                <td class="px-4 py-3 text-center">
-                  <span
-                    v-if="item.status === 'paid'"
-                    class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                  >
-                    ✓ Ödendi
-                  </span>
-                  <span
-                    v-else-if="item.status === 'cancelled'"
-                    class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200"
-                  >
-                    İptal Edildi
-                  </span>
-                  <span
-                    v-else
-                    class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
-                  >
-                    Bekliyor
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-center">
-                  <button
-                    v-if="item.status !== 'paid' && item.status !== 'cancelled'"
-                    @click="openPayInstallmentModal(item)"
-                    class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
-                  >
-                    Tahsil Et
-                  </button>
-                  <span v-else-if="item.status === 'paid'" class="text-xs text-slate-400 font-mono">
-                    {{ formatDate(item.paymentDate) }}
-                  </span>
-                  <span v-else class="text-xs text-slate-400">-</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -1305,23 +1114,40 @@
           </div>
         </div>
 
-        <!-- Sonraki Seans Randevu Planı -->
-        <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <label class="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1">Bir Sonraki Seans Randevusu</label>
-          <div class="grid grid-cols-2 gap-2">
-            <input
-              v-model="sessionForm.nextAppointmentDate"
-              type="date"
-              class="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-mono text-xs text-slate-800 dark:text-white"
-            />
-            <input
-              v-model="sessionForm.nextAppointmentNotes"
-              type="text"
-              placeholder="Örn: Kalın tel geçişi, kontrol"
-              class="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-white"
-            />
+        <!-- Sonraki Seans Randevu Planı (Genel Randevular Takvimine Aktarılır) -->
+        <div class="pt-2.5 border-t border-slate-100 dark:border-slate-800">
+          <label class="block text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1.5 flex items-center gap-1.5">
+            <Icon name="heroicons:calendar" class="w-4 h-4 text-indigo-500" />
+            <span>Bir Sonraki Seans Randevusu (Genel Randevu Takvimine Otomatik Eklenir)</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Randevu Tarihi</label>
+              <input
+                v-model="sessionForm.nextAppointmentDate"
+                type="date"
+                class="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-mono text-xs text-slate-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Randevu Saati</label>
+              <input
+                v-model="sessionForm.nextAppointmentTime"
+                type="time"
+                class="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-mono text-xs text-slate-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-0.5">İşlem / Randevu Notu</label>
+              <input
+                v-model="sessionForm.nextAppointmentNotes"
+                type="text"
+                placeholder="Örn: Braket kontrolü, tel değişimi"
+                class="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-white"
+              />
+            </div>
           </div>
-          <span class="text-[10px] text-slate-400 mt-1 block">Tarih seçilirse randevu takvimine otomatik işlenir.</span>
+          <span class="text-[10px] text-slate-400 mt-1 block">Tarih seçildiğinde Randevular sayfasına otomatik olarak hekim ve hasta ile birlikte eklenir.</span>
         </div>
       </form>
 
@@ -1529,20 +1355,25 @@
       </template>
     </AppModal>
 
-    <!-- MODAL 5: TAKSİT TAHSİLAT FORMU -->
+    <!-- MODAL 5: TAKSİT / TEDAVİ TAHSİLAT FORMU -->
     <AppModal
       :isOpen="isPayInstallmentModalOpen"
-      title="💵 Ortodonti Taksit Tahsilatı Al"
+      :title="currentPayingInstallment?.isDirect ? '💵 Ortodonti Tedavi Tahsilatı Al' : '💵 Ortodonti Taksit Tahsilatı Al'"
       width="md"
       @close="isPayInstallmentModalOpen = false"
     >
       <form @submit.prevent="savePayInstallment" class="space-y-4">
         <div v-if="currentPayingInstallment" class="p-3 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl text-xs flex justify-between items-center">
           <div>
-            <span class="text-slate-400 block text-[10px]">Hasta & Taksit</span>
-            <span class="font-bold text-slate-800 dark:text-white">{{ currentPayingInstallment.patientName }} ({{ currentPayingInstallment.installmentNo }}. Taksit)</span>
+            <span class="text-slate-400 block text-[10px]">Hasta & Tahsilat Türü</span>
+            <span class="font-bold text-slate-800 dark:text-white">
+              {{ currentPayingInstallment.patientName }}
+              <span class="ml-1 text-indigo-600 dark:text-indigo-400">
+                ({{ currentPayingInstallment.installmentNo ? `${currentPayingInstallment.installmentNo}. Taksit` : 'Tedavi Borç Tahsilatı' }})
+              </span>
+            </span>
           </div>
-          <div class="text-right">
+          <div v-if="currentPayingInstallment.dueDate" class="text-right">
             <span class="text-slate-400 block text-[10px]">Vade</span>
             <span class="font-mono font-semibold">{{ formatDate(currentPayingInstallment.dueDate) }}</span>
           </div>
@@ -1650,9 +1481,11 @@ const installmentFilter = ref('pending');
 
 // Seanslar ve Taksitler için Hasta Gruplama & Filtreleme Durumları
 const sessionPatientFilter = ref('all');
-const sessionViewMode = ref('by_patient'); // 'by_patient' | 'timeline'
+const sessionSearchQuery = ref('');
+const sessionViewMode = ref('by_patient');
 const installmentPatientFilter = ref('all');
-const installmentViewMode = ref('by_patient'); // 'by_patient' | 'table'
+const installmentSearchQuery = ref('');
+const installmentViewMode = ref('by_patient');
 
 // Modal durumları
 const isNewPlanModalOpen = ref(false);
@@ -1698,6 +1531,7 @@ const defaultSessionForm = () => ({
   paymentMethod: 'cash',
   paymentNotes: '',
   nextAppointmentDate: '',
+  nextAppointmentTime: '11:00',
   nextAppointmentNotes: ''
 });
 
@@ -1900,7 +1734,16 @@ const patientSessionsGrouped = computed(() => {
     groups[pId].sessions.push(s);
   });
 
-  const list = Object.values(groups);
+  let list = Object.values(groups);
+  if (sessionSearchQuery.value.trim()) {
+    const q = sessionSearchQuery.value.trim().toLowerCase();
+    list = list.filter(g => {
+      const name = `${g.patient?.firstName || ''} ${g.patient?.lastName || ''}`.toLowerCase();
+      const phone = (g.patient?.phone || '').toLowerCase();
+      return name.includes(q) || phone.includes(q);
+    });
+  }
+
   list.forEach(g => {
     g.sessions.sort((a, b) => {
       const d1 = new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -1926,6 +1769,12 @@ const installmentsByPatient = computed(() => {
       const pId = String(plan.patientId?._id || plan.patientId || '');
       if (installmentPatientFilter.value !== 'all' && pId !== installmentPatientFilter.value) {
         return false;
+      }
+      if (installmentSearchQuery.value.trim()) {
+        const q = installmentSearchQuery.value.trim().toLowerCase();
+        const name = `${plan.patientId?.firstName || ''} ${plan.patientId?.lastName || ''}`.toLowerCase();
+        const phone = (plan.patientId?.phone || '').toLowerCase();
+        if (!name.includes(q) && !phone.includes(q)) return false;
       }
       if (installmentFilter.value === 'pending') {
         const hasPendingInst = (plan.installments || []).some(i => i.status === 'pending');
@@ -2059,6 +1908,7 @@ const openEditSessionModal = (s) => {
     paymentMethod: s.paymentMethod || 'cash',
     paymentNotes: s.paymentNotes || '',
     nextAppointmentDate: s.nextAppointmentDate || '',
+    nextAppointmentTime: s.nextAppointmentTime || '11:00',
     nextAppointmentNotes: s.nextAppointmentNotes || ''
   };
   isSelectingPatientForSession.value = false;
@@ -2075,6 +1925,27 @@ const openPayInstallmentModal = (item) => {
     date: todayStr(),
     doctorId: item.doctorId || (doctorsList.value[0]?._id || ''),
     notes: `Ortodonti ${item.installmentNo}. Taksit Tahsilatı`
+  };
+  isPayInstallmentModalOpen.value = true;
+};
+
+const openDirectPaymentModal = (plan) => {
+  const patientObj = plan.patientId || {};
+  currentPayingInstallment.value = {
+    planId: plan._id,
+    patientId: patientObj._id || plan.patientId,
+    patientName: `${patientObj.firstName || ''} ${patientObj.lastName || ''}`.trim() || 'Ortodonti Hastası',
+    installmentNo: null,
+    isDirect: true
+  };
+  payInstallmentForm.value = {
+    planId: plan._id,
+    installmentNo: null,
+    amount: plan.summary?.remainingBalance ?? plan.totalAmount,
+    method: 'cash',
+    date: todayStr(),
+    doctorId: plan.doctorId?._id || plan.doctorId || (doctorsList.value[0]?._id ? String(doctorsList.value[0]._id) : ''),
+    notes: 'Ortodonti Tedavi Tahsilatı'
   };
   isPayInstallmentModalOpen.value = true;
 };
@@ -2265,14 +2136,32 @@ const deleteSession = async (id) => {
 const savePayInstallment = async () => {
   try {
     isSubmitting.value = true;
-    await $fetch(`/api/orthodontics/plans/${payInstallmentForm.value.planId}/pay-installment`, {
-      method: 'POST',
-      body: payInstallmentForm.value
-    });
-
-    window.dispatchEvent(new CustomEvent('toast-message', {
-      detail: { message: 'Taksit tahsilatı kasaya ve hekim hak edişine işlendi.', type: 'success' }
-    }));
+    if (payInstallmentForm.value.installmentNo) {
+      await $fetch(`/api/orthodontics/plans/${payInstallmentForm.value.planId}/pay-installment`, {
+        method: 'POST',
+        body: payInstallmentForm.value
+      });
+      window.dispatchEvent(new CustomEvent('toast-message', {
+        detail: { message: 'Taksit tahsilatı kasaya ve hekim hak edişine işlendi.', type: 'success' }
+      }));
+    } else {
+      await $fetch('/api/payments', {
+        method: 'POST',
+        body: {
+          patientId: currentPayingInstallment.value?.patientId,
+          orthodonticPlanId: payInstallmentForm.value.planId,
+          isOrthodontic: true,
+          amount: Number(payInstallmentForm.value.amount),
+          method: payInstallmentForm.value.method,
+          date: payInstallmentForm.value.date,
+          doctorId: payInstallmentForm.value.doctorId,
+          notes: payInstallmentForm.value.notes
+        }
+      });
+      window.dispatchEvent(new CustomEvent('toast-message', {
+        detail: { message: 'Tedavi tahsilatı kasaya ve hekim hak edişine işlendi.', type: 'success' }
+      }));
+    }
 
     isPayInstallmentModalOpen.value = false;
     await loadAllData();

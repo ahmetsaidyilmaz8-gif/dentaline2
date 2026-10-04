@@ -25,10 +25,18 @@ export default defineEventHandler(async (event) => {
       filter.patientId = patientId;
     }
 
+    const doctorId = query.doctorId ? String(query.doctorId) : '';
+    if (doctorId && doctorId !== 'all') {
+      filter.doctorId = doctorId;
+    }
+
+    filter.isDeleted = { $ne: true };
+
     const limit = Math.min(2000, Number(query.limit) || (date || (startDate && endDate) || patientId ? 2000 : 500));
 
     const appointments = await Appointment.find(filter)
       .populate('patientId', 'firstName lastName phone bloodType allergies')
+      .populate('doctorId', 'name username title')
       .sort({ date: 1, time: 1 })
       .limit(limit)
       .lean();

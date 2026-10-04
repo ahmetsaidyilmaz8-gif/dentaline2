@@ -54,6 +54,10 @@ const orthodonticSessionSchema = new mongoose.Schema({
     type: String, // YYYY-MM-DD
     default: ''
   },
+  nextAppointmentTime: {
+    type: String, // HH:MM
+    default: '11:00'
+  },
   nextAppointmentNotes: {
     type: String,
     default: ''
