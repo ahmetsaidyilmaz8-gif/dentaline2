@@ -498,30 +498,30 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button
-                    v-if="appt.status === 'pending' || appt.status === 'postponed'"
-                    @click="updateStatus(appt._id, 'completed')"
-                    class="p-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg border border-emerald-200/50 dark:border-emerald-800/50 transition-colors"
-                    title="Tamamlandı"
-                  >
-                    <Icon name="heroicons:check" class="w-4 h-4 stroke-[2.5]" />
-                  </button>
-                  <button
-                    v-if="appt.status === 'pending'"
-                    @click="updateStatus(appt._id, 'postponed')"
-                    class="p-1.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg border border-purple-200/50 dark:border-purple-800/50 transition-colors"
-                    title="Ertele"
-                  >
-                    <Icon name="heroicons:clock" class="w-4 h-4 stroke-[2.5]" />
-                  </button>
-                  <button
-                    v-if="appt.status === 'pending' || appt.status === 'postponed'"
-                    @click="updateStatus(appt._id, 'cancelled')"
-                    class="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg border border-rose-200/50 dark:border-rose-800/50 transition-colors"
-                    title="İptal Et"
-                  >
-                    <Icon name="heroicons:x-mark" class="w-4 h-4 stroke-[2.5]" />
-                  </button>
+                  <!-- Yalnızca Bekleyen (pending) Randevularda Hızlı Durum Butonları -->
+                  <template v-if="appt.status === 'pending'">
+                    <button
+                      @click="updateStatus(appt._id, 'completed')"
+                      class="p-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg border border-emerald-200/50 dark:border-emerald-800/50 transition-colors"
+                      title="Tamamlandı"
+                    >
+                      <Icon name="heroicons:check" class="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                    <button
+                      @click="updateStatus(appt._id, 'postponed')"
+                      class="p-1.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg border border-purple-200/50 dark:border-purple-800/50 transition-colors"
+                      title="Ertele"
+                    >
+                      <Icon name="heroicons:clock" class="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                    <button
+                      @click="updateStatus(appt._id, 'cancelled')"
+                      class="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg border border-rose-200/50 dark:border-rose-800/50 transition-colors"
+                      title="İptal Et"
+                    >
+                      <Icon name="heroicons:x-mark" class="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                  </template>
                   <button
                     @click="openEditModal(appt)"
                     class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors"
