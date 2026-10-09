@@ -1403,7 +1403,7 @@
             <span class="text-lg">🦷</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Diş Haritasına Otomatik Yansıt</p>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">Diş #{{ treatmentForm.tooth }} durumu haritada 3D anatomik olarak güncellensin</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Diş #{{ treatmentForm.tooth }} durumu diş haritasına anında işlensin</p>
             </div>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
@@ -3632,6 +3632,9 @@ const deleteLedgerItem = async (item) => {
     }));
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
+    if (isTreatment) {
+      window.dispatchEvent(new CustomEvent('refresh-dental-chart'));
+    }
   } catch (error) {
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {

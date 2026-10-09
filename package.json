@@ -27,6 +27,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.5.2",
     "@iconify-json/heroicons": "^1.2.3",
-    "@types/node": "^26.0.1"
+    "@types/node": "^26.0.1",
+    "puppeteer-core": "^25.13.0"
   }
 }
