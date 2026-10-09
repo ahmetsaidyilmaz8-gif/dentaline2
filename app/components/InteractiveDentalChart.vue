@@ -1185,6 +1185,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import ToothSvg from './ToothSvg.vue';
 import { useUtils } from '~/composables/useUtils';
 
 const props = defineProps({
