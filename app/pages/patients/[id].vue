@@ -1397,6 +1397,20 @@
             />
           </div>
         </div>
+        <!-- Diş Haritasına Otomatik Ekleme / Senkronizasyon Seçeneği -->
+        <div v-if="treatmentForm.tooth" class="p-3 bg-teal-50/70 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800/40 rounded-xl flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🦷</span>
+            <div>
+              <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Diş Haritasına Otomatik Yansıt</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Diş #{{ treatmentForm.tooth }} durumu haritada 3D anatomik olarak güncellensin</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" v-model="treatmentForm.syncDentalChart" class="sr-only peer" />
+            <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-teal-600"></div>
+          </label>
+        </div>
         <div>
           <label class="block text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Tarih <span class="text-rose-500">*</span></label>
           <input
@@ -3241,7 +3255,8 @@ const treatmentForm = ref({
   fee: 0,
   date: todayStr(),
   notes: '',
-  doctorId: ''
+  doctorId: '',
+  syncDentalChart: true
 });
 
 const paymentForm = ref({
@@ -3361,7 +3376,8 @@ const openNewTreatmentModal = async () => {
     fee: 0,
     date: todayStr(),
     notes: '',
-    doctorId: getDefaultDoctorId()
+    doctorId: getDefaultDoctorId(),
+    syncDentalChart: true
   };
   isTreatmentModalOpen.value = true;
 };
@@ -3405,7 +3421,8 @@ const openEditModal = async (item) => {
       fee: item.amount || 0,
       date: item.date || todayStr(),
       notes: item.notes || '',
-      doctorId: finalDocId
+      doctorId: finalDocId,
+      syncDentalChart: true
     };
     isTreatmentModalOpen.value = true;
   } else if (item.type === 'payment') {
@@ -3447,7 +3464,8 @@ const saveTreatment = async () => {
         method: 'PUT',
         body: {
           patientId: strPid,
-          ...treatmentForm.value
+          ...treatmentForm.value,
+          syncDentalChart: treatmentForm.value.syncDentalChart !== false
         }
       });
 
@@ -3459,7 +3477,8 @@ const saveTreatment = async () => {
         method: 'POST',
         body: {
           patientId: strPid,
-          ...treatmentForm.value
+          ...treatmentForm.value,
+          syncDentalChart: treatmentForm.value.syncDentalChart !== false
         }
       });
 
@@ -3475,12 +3494,14 @@ const saveTreatment = async () => {
       fee: 0,
       date: todayStr(),
       notes: '',
-      doctorId: getDefaultDoctorId()
+      doctorId: getDefaultDoctorId(),
+      syncDentalChart: true
     };
     editingTreatmentId.value = null;
 
     await loadPatientDetails();
     window.dispatchEvent(new CustomEvent('refresh-stats'));
+    window.dispatchEvent(new CustomEvent('refresh-dental-chart'));
   } catch (error) {
     console.error(error);
     window.dispatchEvent(new CustomEvent('toast-message', {
@@ -4444,13 +4465,17 @@ const handleClickOutside = (e) => {
 // Türkçe karakter duyarsız arama
 const normalizeTr = (str = '') => {
   return String(str || '')
-    .toLocaleLowerCase('tr-TR')
+    .normalize('NFC')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
     .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
+    .toLocaleLowerCase('tr-TR')
+    .toLowerCase()
+    .replace(/ç/g, 'c')
     .replace(/ğ/g, 'g')
-    .replace(/ç/g, 'c');
+    .replace(/ö/g, 'o')
+    .replace(/ş/g, 's')
+    .replace(/ü/g, 'u');
 };
 
 // Aile Verilerini Sunucudan Yükle

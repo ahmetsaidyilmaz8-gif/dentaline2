@@ -101,7 +101,7 @@ export default defineEventHandler(async (event) => {
         .populate('doctorId', 'name username title')
         .lean();
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = new Date().toISOString().slice(0, 10);
 
       const isDateMatch = (rawD: string) => {
         if (!rawD) return false;

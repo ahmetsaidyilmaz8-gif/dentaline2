@@ -1,6 +1,7 @@
 import { Expense } from '../../models/Expense';
 import { Payment } from '../../models/Payment';
-import { requireDoctor, makeTurkishRegex } from '../../utils/auth';
+import { requireDoctor } from '../../utils/auth';
+import { makeTurkishRegex } from '../../utils/turkishSearch';
 
 const MONTH_NAMES = [
   'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',

@@ -102,7 +102,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const { formatPhone } = useUtils();
+const { formatPhone, normalizeTurkish } = useUtils();
 
 const isOpen = ref(false);
 const searchQuery = ref('');
@@ -192,19 +192,6 @@ const handleFocusOut = (event) => {
   }
 };
 
-// Lowercase Turkish search match helper
-const lowerTurkish = (str) => {
-  if (!str) return '';
-  return str
-    .toLowerCase()
-    .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
-    .replace(/ğ/g, 'g')
-    .replace(/ç/g, 'c');
-};
-
 // Compute filtered patients (performans için en fazla 50 kayıt listelenir)
 const filteredPatients = computed(() => {
   const query = searchQuery.value.trim();
@@ -214,10 +201,33 @@ const filteredPatients = computed(() => {
     return effectivePatients.value.slice(0, 50);
   }
   
-  const searchLower = lowerTurkish(query);
+  const cleanQ = normalizeTurkish(query);
+  const words = cleanQ.split(/\s+/).filter(Boolean);
+  const digitsQ = query.replace(/\D/g, '');
+
   return effectivePatients.value.filter((p) => {
-    const fullName = `${p.firstName} ${p.lastName}`;
-    return lowerTurkish(fullName).includes(searchLower) || (p.phone && lowerTurkish(p.phone).includes(searchLower));
+    const fullName = `${p.firstName || ''} ${p.lastName || ''} ${p.fullName || ''}`;
+    const cleanName = normalizeTurkish(fullName);
+    const phoneDigits = (p.phone || '').replace(/\D/g, '');
+    const tcNo = (p.tcNo || '').toString().replace(/\D/g, '');
+
+    // Telefon veya TC eşleşmesi
+    if (digitsQ.length >= 3 && (phoneDigits.includes(digitsQ) || tcNo.includes(digitsQ))) {
+      return true;
+    }
+
+    if (words.length === 0) return false;
+
+    const nameWords = cleanName.split(/\s+/).filter(Boolean);
+
+    // Her kelimenin ad/soyad içinde bulunması gerekir (FATMA ÇELİK, ÇELİK FATMA, fatma ç)
+    return words.every((w) => {
+      // 1-2 harfli aramalarda (örn "ç") kelime başlangıçlarına bak
+      if (w.length <= 2) {
+        return nameWords.some(nw => nw.startsWith(w));
+      }
+      return cleanName.includes(w);
+    });
   }).slice(0, 50);
 });
 

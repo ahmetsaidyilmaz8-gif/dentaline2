@@ -1,6 +1,7 @@
 import { Patient } from '../../models/Patient';
 import { Treatment } from '../../models/Treatment';
 import { Payment } from '../../models/Payment';
+import { buildPatientSearchFilter } from '../../utils/turkishSearch';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -10,15 +11,7 @@ export default defineEventHandler(async (event) => {
 
     let filter: any = {};
     if (q) {
-      const searchRegex = new RegExp(q, 'i');
-      filter = {
-        $or: [
-          { firstName: searchRegex },
-          { lastName: searchRegex },
-          { phone: searchRegex },
-          { tcNo: searchRegex }
-        ]
-      };
+      filter = buildPatientSearchFilter(q);
     }
 
     // Dropdown / Seçim listeleri için hızlı mod (bakiye hesaplamadan sadece gerekli alanları döner)

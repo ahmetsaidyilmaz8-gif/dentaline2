@@ -10,6 +10,21 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <!-- 3D Anatomik / Vektör Görünüm Modu Butonu -->
+        <button
+          @click="is3DMode = !is3DMode"
+          :class="[
+            is3DMode
+              ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-teal-600/20 shadow-sm'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700',
+            'flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap'
+          ]"
+          :title="is3DMode ? 'Vektör Çizim Moduna Geç' : '3D Realistik Anatomik Moduna Geç'"
+        >
+          <Icon :name="is3DMode ? 'heroicons:cube' : 'heroicons:pencil-square'" class="w-4 h-4 shrink-0" />
+          <span>{{ is3DMode ? '3D Anatomik: AÇIK' : '3D: KAPALI' }}</span>
+        </button>
+
         <!-- Hızlı İşlem Modu Butonu -->
         <button
           @click="isQuickActionMode = !isQuickActionMode"
@@ -179,6 +194,7 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="true"
                   :isSelected="activeToothNum === num"
+                  :use3D="is3DMode"
                   :width="17"
                   :height="30"
                 />
@@ -204,6 +220,7 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="true"
                   :isSelected="activeToothNum === num"
+                  :use3D="is3DMode"
                   :width="17"
                   :height="30"
                 />
@@ -236,6 +253,7 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="false"
                   :isSelected="activeToothNum === num"
+                  :use3D="is3DMode"
                   :width="17"
                   :height="30"
                 />
@@ -261,6 +279,7 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="false"
                   :isSelected="activeToothNum === num"
+                  :use3D="is3DMode"
                   :width="17"
                   :height="30"
                 />
@@ -313,8 +332,9 @@
               :procedures="getToothProcedures(num)"
               :isUpper="selectedQuadrant === 'UR' || selectedQuadrant === 'UL'"
               :isSelected="activeToothNum === num"
-              :width="36"
-              :height="56"
+              :use3D="is3DMode"
+              :width="38"
+              :height="62"
             />
           </button>
         </div>
@@ -417,8 +437,9 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="true"
                   :isSelected="activeToothNum === num"
-                  :width="42"
-                  :height="66"
+                  :use3D="is3DMode"
+                  :width="44"
+                  :height="70"
                 />
               </button>
             </div>
@@ -442,8 +463,9 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="true"
                   :isSelected="activeToothNum === num"
-                  :width="42"
-                  :height="66"
+                  :use3D="is3DMode"
+                  :width="44"
+                  :height="70"
                 />
               </button>
             </div>
@@ -472,8 +494,9 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="false"
                   :isSelected="activeToothNum === num"
-                  :width="42"
-                  :height="66"
+                  :use3D="is3DMode"
+                  :width="44"
+                  :height="70"
                 />
               </button>
             </div>
@@ -497,8 +520,9 @@
                   :procedures="getToothProcedures(num)"
                   :isUpper="false"
                   :isSelected="activeToothNum === num"
-                  :width="42"
-                  :height="66"
+                  :use3D="is3DMode"
+                  :width="44"
+                  :height="70"
                 />
               </button>
             </div>
@@ -1160,7 +1184,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useUtils } from '~/composables/useUtils';
 
 const props = defineProps({
@@ -1182,6 +1206,9 @@ const {
   formatCurrency,
   todayStr
 } = useUtils();
+
+// 3D Realistik Anatomik Görünüm Modu (Varsayılan AÇIK)
+const is3DMode = ref(true);
 
 // FDI Diş Numaraları
 const UPPER_RIGHT = [18, 17, 16, 15, 14, 13, 12, 11];
@@ -1255,8 +1282,21 @@ const loadChart = async () => {
   }
 };
 
+const onRefreshChart = () => {
+  loadChart();
+};
+
 onMounted(() => {
   loadChart();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('refresh-dental-chart', onRefreshChart);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('refresh-dental-chart', onRefreshChart);
+  }
 });
 
 // Dişin aktif işlemler listesini al

@@ -8,7 +8,48 @@
       ]"
       :style="{ width: width + 'px', height: height + 'px' }"
     >
+      <!-- 1. 3D Gerçekçi Anatomik Model Görseli -->
+      <div v-if="use3D && !imageError" class="w-full h-full relative flex items-center justify-center overflow-visible">
+        <img
+          :src="primaryImagePath"
+          :alt="`Diş ${toothNumber}`"
+          loading="eager"
+          decoding="async"
+          draggable="false"
+          class="w-full h-full object-contain filter drop-shadow-md transition-all duration-200 select-none pointer-events-none"
+          :class="{
+            'opacity-30 grayscale': activeProcedures.includes('missing'),
+            'opacity-60': activeProcedures.includes('extraction')
+          }"
+          @error="imageError = true"
+        />
+
+        <!-- Çekim (Kırmızı Çarpı) -->
+        <div v-if="activeProcedures.includes('extraction')" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span class="text-rose-600 font-black text-2xl leading-none drop-shadow-md">✕</span>
+        </div>
+
+        <!-- Çürük Noktası (Kırmızı Titreşimli Nokta) -->
+        <div v-if="activeProcedures.includes('decay')" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="w-3 h-3 rounded-full bg-rose-600 border border-white animate-pulse block shadow-md"></span>
+        </div>
+
+        <!-- Diş Taşı / Tartar Çizgisi -->
+        <div v-if="activeProcedures.includes('scaling') || activeProcedures.includes('curettage')" class="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+          <div class="w-3/4 h-1 bg-amber-400 rounded-full shadow-sm"></div>
+        </div>
+
+        <!-- Çoklu İşlem: Hem Kanal Hem Kaplama/Dolgu varsa Kök Kanal İndikatörü -->
+        <div
+          v-if="activeProcedures.includes('rootcanal') && (activeProcedures.includes('crown') || activeProcedures.includes('filled'))"
+          class="absolute -top-1 right-0 w-2.5 h-2.5 rounded-full bg-orange-500 border border-white shadow"
+          title="Kök Kanal Tedavisi Mevcut"
+        ></div>
+      </div>
+
+      <!-- 2. Vektör Çizim Modeli (SVG - Fallback veya Seçildiğinde) -->
       <svg
+        v-else
         viewBox="0 0 46 72"
         class="w-full h-full drop-shadow-sm overflow-visible transition-all duration-200"
         :class="{ 'opacity-30 filter grayscale': activeProcedures.includes('missing') }"
@@ -439,7 +480,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useUtils } from '~/composables/useUtils';
 
 const props = defineProps({
@@ -470,7 +511,32 @@ const props = defineProps({
   height: {
     type: Number,
     default: 58
+  },
+  use3D: {
+    type: Boolean,
+    default: true
   }
+});
+
+const imageError = ref(false);
+
+const primaryImagePath = computed(() => {
+  const procs = activeProcedures.value;
+  let statusName = 'saglikli';
+  if (procs.includes('implant')) {
+    statusName = 'implant';
+  } else if (procs.includes('crown') || procs.includes('veneer')) {
+    statusName = 'kaplama';
+  } else if (procs.includes('filled') || procs.includes('dolgu') || procs.includes('inlay_onlay')) {
+    statusName = 'dolgu';
+  } else if (procs.includes('rootcanal')) {
+    statusName = 'kanal';
+  }
+  return `/teeth/${props.toothNumber}_${statusName}.png`;
+});
+
+watch(primaryImagePath, () => {
+  imageError.value = false;
 });
 
 const { getToothStatusInfo } = useUtils();

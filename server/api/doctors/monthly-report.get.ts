@@ -175,11 +175,11 @@ export default defineEventHandler(async (event) => {
     const currentMonthNum = String(new Date().getMonth() + 1).padStart(2, '0');
     const defaultCurrentMonthStr = `${year}-${currentMonthNum}`;
     let activeMonthStr = requestedMonth || defaultCurrentMonthStr;
-    let activeMeta = months.find((m) => m.month === activeMonthStr);
+    const activeMeta = months.find((m) => m.month === activeMonthStr) || months[months.length - 1] || months[0];
     if (!activeMeta) {
-      activeMeta = months[months.length - 1];
-      activeMonthStr = activeMeta.month;
+      throw createError({ statusCode: 500, message: 'Aylık veri bulunamadı.' });
     }
+    activeMonthStr = activeMeta.month;
 
     // Aktif ayın detaylı işlemleri (treatments, payments, payouts)
     const activeStartDate = activeMeta.startDate;

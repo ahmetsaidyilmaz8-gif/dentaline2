@@ -1194,14 +1194,17 @@ const loadAppointments = async (silent = false) => {
 // Türkçe karakter duyarsız arama normalleştirici
 const normalizeTr = (str = '') => {
   return String(str || '')
+    .normalize('NFC')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
+    .replace(/ı/g, 'i')
     .toLocaleLowerCase('tr-TR')
     .toLowerCase()
-    .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
+    .replace(/ç/g, 'c')
     .replace(/ğ/g, 'g')
-    .replace(/ç/g, 'c');
+    .replace(/ö/g, 'o')
+    .replace(/ş/g, 's')
+    .replace(/ü/g, 'u');
 };
 
 const isSearchingPatients = ref(false);
@@ -1258,11 +1261,17 @@ const filteredPatients = computed(() => {
     const fullName = `${p.firstName || ''} ${p.lastName || ''} ${p.fullName || ''}`;
     const cleanName = normalizeTr(fullName);
     const phoneDigits = (p.phone || '').replace(/\D/g, '');
-    const tcNo = (p.tcNo || p.tcKimlik || '').toString();
+    const tcNo = (p.tcNo || p.tcKimlik || '').toString().replace(/\D/g, '');
 
-    const nameMatches = words.length > 0 && words.every(w => cleanName.includes(w));
-    const phoneMatches = Boolean(digitsQ && phoneDigits.includes(digitsQ));
-    const tcMatches = Boolean(digitsQ && tcNo.includes(digitsQ));
+    const nameWords = cleanName.split(/\s+/).filter(Boolean);
+    const nameMatches = words.length > 0 && words.every(w => {
+      if (w.length <= 2) {
+        return nameWords.some(nw => nw.startsWith(w));
+      }
+      return cleanName.includes(w);
+    });
+    const phoneMatches = Boolean(digitsQ && digitsQ.length >= 3 && phoneDigits.includes(digitsQ));
+    const tcMatches = Boolean(digitsQ && digitsQ.length >= 3 && tcNo.includes(digitsQ));
 
     return nameMatches || phoneMatches || tcMatches;
   }).slice(0, 50);

@@ -28,17 +28,7 @@ export function normalizeUsername(raw: string): string {
   return clean;
 }
 
-export function makeTurkishRegex(text: string): RegExp {
-  const clean = text.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&');
-  const pattern = clean
-    .replace(/[iİıI]/g, '[iİıI]')
-    .replace(/[çÇcC]/g, '[çÇcC]')
-    .replace(/[ğĞgG]/g, '[ğĞgG]')
-    .replace(/[öÖoO]/g, '[öÖoO]')
-    .replace(/[üÜuU]/g, '[üÜuU]')
-    .replace(/[şŞsS]/g, '[şŞsS]');
-  return new RegExp(pattern, 'i');
-}
+
 
 export async function getDoctorFromEvent(event: any) {
   const doctorId = getCookie(event, 'tenax_doctor_id') || getHeader(event, 'x-doctor-id');

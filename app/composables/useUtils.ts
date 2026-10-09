@@ -198,6 +198,22 @@ export const useUtils = () => {
     return TOOTH_STATUSES[status] || TOOTH_STATUSES.healthy;
   };
 
+  // Türkçe karakter ve büyük/küçük harf duyarsız arama normalizasyonu
+  const normalizeTurkish = (text: string = ''): string => {
+    return String(text || '')
+      .normalize('NFC')
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/ı/g, 'i')
+      .toLocaleLowerCase('tr-TR')
+      .toLowerCase()
+      .replace(/ç/g, 'c')
+      .replace(/ğ/g, 'g')
+      .replace(/ö/g, 'o')
+      .replace(/ş/g, 's')
+      .replace(/ü/g, 'u');
+  };
+
   return {
     formatDate,
     formatDateLong,
@@ -209,6 +225,7 @@ export const useUtils = () => {
     formatPhone,
     getAvatarColorClass,
     getInitials,
+    normalizeTurkish,
     PROCEDURES,
     BLOOD_TYPES,
     PAYMENT_METHODS,

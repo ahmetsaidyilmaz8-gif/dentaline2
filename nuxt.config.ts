@@ -82,7 +82,12 @@ export default defineNuxtConfig({
   },
   nitro: {
     routeRules: {
-      '/api/backup/**': { maxDuration: 60 }
+      '/api/backup/**': { maxDuration: 60 },
+      '/teeth/**': {
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, immutable'
+        }
+      }
     }
   }
 })

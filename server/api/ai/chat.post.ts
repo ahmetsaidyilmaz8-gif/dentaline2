@@ -4,13 +4,8 @@ import { Appointment } from '../../models/Appointment';
 import { Reminder } from '../../models/Reminder';
 import { Payment } from '../../models/Payment';
 import { Treatment } from '../../models/Treatment';
-import { requireDoctor, makeTurkishRegex } from '../../utils/auth';
-
-function makeTurkishRegex(text) {
-  const clean = text.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
-  const pattern = clean.replace(/[iİıI]/g, "[i\u0130\u0131I]").replace(/[çÇcC]/g, "[\xE7\xC7cC]").replace(/[ğĞgG]/g, "[\u011F\u011EgG]").replace(/[öÖoO]/g, "[\xF6\xD6oO]").replace(/[üÜuU]/g, "[\xFC\xDCuU]").replace(/[şŞsS]/g, "[\u015F\u015EsS]");
-  return new RegExp(pattern, "i");
-}
+import { requireDoctor } from '../../utils/auth';
+import { makeTurkishRegex } from '../../utils/turkishSearch';
 function cleanPatientSearchTerm(raw) {
   if (!raw || typeof raw !== "string") return "";
   const cleaned = raw.replace(/\b(bakiye|bakiyesi|borcu|borç|borcunu|kalan|ödenen|ödeme|tutar|tutarı|sorgula|sorgulama|bilgisi|bilgileri|bilgilerini|kimdir|hastası|hastanın|randevu|randevusu|ne kadar|kaç para)\b/gi, " ").replace(/\s+/g, " ").trim();

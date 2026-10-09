@@ -2,7 +2,8 @@ import { Payment } from '../../models/Payment';
 import { Treatment } from '../../models/Treatment';
 import { Patient } from '../../models/Patient';
 import '../../models/User';
-import { requireDoctor, makeTurkishRegex } from '../../utils/auth';
+import { requireDoctor } from '../../utils/auth';
+import { buildPatientSearchFilter, makeTurkishRegex } from '../../utils/turkishSearch';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -99,16 +100,8 @@ export default defineEventHandler(async (event) => {
 
     let matchingPatientIds: any[] | null = null;
     if (q) {
-      const regex = makeTurkishRegex(q);
-      const patients = await Patient.find({
-        $or: [
-          { fullName: regex },
-          { firstName: regex },
-          { lastName: regex },
-          { phone: regex },
-          { tcNo: regex }
-        ]
-      }, '_id').limit(200).lean();
+      const pFilter = buildPatientSearchFilter(q);
+      const patients = await Patient.find(pFilter, '_id').limit(300).lean();
       matchingPatientIds = patients.map((p) => p._id);
     }
 

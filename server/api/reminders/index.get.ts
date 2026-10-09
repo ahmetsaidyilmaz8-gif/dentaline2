@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       .lean();
 
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = now.toISOString().slice(0, 10);
 
     const formatted = reminders.map((r: any) => {
       const isSnoozed = Boolean(r.snoozedUntil && r.snoozedUntil > todayStr);

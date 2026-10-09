@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     // Zorunlu alan kısıtlamaları kaldırıldı - Boş bırakılırsa varsayılan isim atanır
     body.firstName = (body.firstName || '').trim() || 'İsimsiz';
     body.lastName = (body.lastName || '').trim() || 'Hasta';
+    body.fullName = `${body.firstName} ${body.lastName}`.trim();
 
     const patient = new Patient(body);
     await patient.save();
