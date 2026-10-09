@@ -518,6 +518,19 @@ const props = defineProps({
   }
 });
 
+const { getToothStatusInfo } = useUtils();
+
+// Aktif İşlemler Listesi
+const activeProcedures = computed(() => {
+  if (Array.isArray(props.procedures) && props.procedures.length > 0) {
+    return props.procedures;
+  }
+  if (props.status && props.status !== 'healthy') {
+    return [props.status];
+  }
+  return ['healthy'];
+});
+
 const imageError = ref(false);
 
 const primaryImagePath = computed(() => {
@@ -538,8 +551,6 @@ const primaryImagePath = computed(() => {
 watch(primaryImagePath, () => {
   imageError.value = false;
 });
-
-const { getToothStatusInfo } = useUtils();
 
 // Çene Yönü (Üst / Alt)
 const isUpper = computed(() => {
@@ -567,17 +578,6 @@ const toothCategory = computed(() => {
 const isCentralIncisor = computed(() => {
   const digit = props.toothNumber % 10;
   return digit === 1;
-});
-
-// Aktif İşlemler Listesi
-const activeProcedures = computed(() => {
-  if (Array.isArray(props.procedures) && props.procedures.length > 0) {
-    return props.procedures;
-  }
-  if (props.status && props.status !== 'healthy') {
-    return [props.status];
-  }
-  return ['healthy'];
 });
 
 // Kuron Dolgu Rengi
